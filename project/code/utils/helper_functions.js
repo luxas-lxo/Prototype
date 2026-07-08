@@ -30,7 +30,7 @@ function initWorld(){
 
 function preload() {
   codTable = loadTable(
-    "data/fish.csv",
+    "data/fish2.csv",
     "csv",
     "header"
   );
