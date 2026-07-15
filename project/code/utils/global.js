@@ -1,34 +1,46 @@
 let fishSwarms = [];
-let clickGlows = [];
 let clickForces = [];
+let clickGlows = [];
 
 let codTable;
-//let codSwarms = [];
-
-let currentYear = 1970;
-let yearSpeed = 0.02;
-
-let trailLayer;
-
-let fishShader;
-let shaderLayer;
 let codSwarms = [];
 
-const MAX_SHADER_PARTICLES = 80;
-const MAX_SHADER_GLOWS = 8;
+let currentYear = 1970;
+const FRAMES_PER_YEAR = 250;
+let yearSpeed = 1 / FRAMES_PER_YEAR;
+const FISH_FADE_IN_SPEED = 0.015;
+
+let trailLayer;
+let fishShader;
+let shaderLayer;
 
 let stage = 0;
 let aquarium;
-const rand = 0.15;
-
 let frameRateP;
 
+const rand = 0.15;
+
+// Maximum number of fish simulated and rendered per swarm
+const SHADER_PARTICLE_LIMIT = 80;
+const MAX_SHADER_PARTICLES = SHADER_PARTICLE_LIMIT;
+
+// Available base colors assigned randomly to individual fish
+const FISH_COLORS = [
+    "#0042D6",
+    "#0084D6",
+    "#0400D6",
+    "#00C7D6",
+    "#4A00D6"
+];
+
+// Dimensions of the simulated 3D world
 const WORLD = {
   w: 280 * 2,
   h: 220 * 2,
   d: 260 * 2
 };
 
+// Full-screen vertex shader
 const fishVert = `
 precision mediump float;
 
@@ -41,103 +53,93 @@ void main() {
 }
 `;
 
+// Fish particle fragment shader
 const fishFrag = `
 precision mediump float;
 
 uniform vec2 u_resolution;
-
 uniform int u_count;
-uniform vec4 u_particles[80];
+
 // x, y, size, angle
+uniform vec4 u_particles[80];
 
+// red, green, blue, intensity
 uniform vec4 u_particleData[80];
-// alpha, unused, unused, unused
-
-uniform int u_glowCount;
-uniform vec4 u_glows[8];
-// x, y, radius, strength
 
 void main() {
-  vec2 uv = vec2(
-    gl_FragCoord.x,
-    u_resolution.y - gl_FragCoord.y
-  );
+  vec2 uv = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y);
 
-  vec3 col = vec3(0.0);
-  float outAlpha = 0.0;
+  vec3 colorOutput = vec3(0.0);
+  float alphaOutput = 0.0;
 
   for (int i = 0; i < 80; i++) {
     if (i >= u_count) break;
 
-    vec4 p = u_particles[i];
-    vec4 info = u_particleData[i];
+    vec4 particle = u_particles[i];
+    vec4 particleInfo = u_particleData[i];
 
-    vec2 d = uv - p.xy;
+    vec2 offset = uv - particle.xy;
 
-    float angle = p.w;
-    float c = cos(angle);
-    float sA = sin(angle);
+    float particleAngle = particle.w;
+    float angleCos = cos(particleAngle);
+    float angleSin = sin(particleAngle);
 
-    mat2 rot = mat2(
-      c, -sA,
-      sA, c
-    );
+    mat2 rotation = mat2(angleCos, -angleSin, angleSin, angleCos);
 
-    d = rot * d;
+    offset = rotation * offset;
 
-    // ovale Fischform
-    d.x *= 0.65;
-    d.y *= 1.65;
+    // Transform the circular distance field into an oval fish shape
+    offset.x *= 0.65;
+    offset.y *= 1.65;
 
-    float r2 = dot(d, d);
-    float s = p.z;
-    float s2 = s * s;
+    float particleSize = max(particle.z, 0.001);
+    float particleSizeSquared = particleSize * particleSize;
+    float radiusSquared = dot(offset, offset);
+    float normalizedRadiusSquared = radiusSquared / particleSizeSquared;
 
-    // harte/matte Körpermaske statt reiner Glow-Wolke
-    float body = smoothstep(1.0, 0.0, r2 / (s2 * 1.00));
+    // Create a smooth but clearly defined fish body
+    float body = smoothstep(1.0, 0.82, normalizedRadiusSquared);
 
-    // heller Kern, aber nicht riesig
-    float core = smoothstep(0.45, 0.0, r2 / (s2 * 0.22));
+    // Convert the pixel position into normalized local fish coordinates
+    vec2 localPosition = offset / particleSize;
 
-    // sehr subtiler äußerer Glow
-    float glow = smoothstep(1.0, 0.0, r2 / (s2 * 5.0));
+    // Approximate the curved surface of an ellipsoid
+    float surfaceDepth = sqrt(max(0.0, 1.0 - dot(localPosition, localPosition)));
 
-    // Grundlicht
-    float light = 0.10;
+    // Create a fixed diagonal highlight without simulating a real light source
+    float diagonalGradient = clamp(0.5 - localPosition.x * 0.42 - localPosition.y * 0.58, 0.0, 1.0);
 
-    // Klicklicht
-    for (int g = 0; g < 8; g++) {
-      if (g >= u_glowCount) break;
+    // Combine the directional gradient with the curved body volume
+    float shading = clamp(diagonalGradient * 0.88 + surfaceDepth * 0.12, 0.0, 1.0);
+    shading = smoothstep(0.05, 0.95, shading);
 
-      vec4 cg = u_glows[g];
+    vec3 baseColor = particleInfo.rgb;
+    float intensity = clamp(particleInfo.a, 0.0, 1.0);
 
-      float gd = distance(uv, cg.xy);
+    // Derive the shadow and highlight colors from the individual base color
+    vec3 shadowColor = baseColor * 0.28;
 
-      if (gd < cg.z) {
-        float tapLight = 1.0 - smoothstep(0.0, cg.z, gd);
-        light = max(light, 0.25 + tapLight * 0.75 * cg.w);
-      }
+    // Blend from a strongly darkened shadow to an almost white highlight
+    vec3 midColor = baseColor;
+    vec3 highlightColor = baseColor * 1.35;
+    vec3 shadedColor;
+
+    if (shading < 0.5) {
+        shadedColor = mix(shadowColor, midColor, shading * 2.0);
+    } else {
+        shadedColor = mix(midColor, highlightColor, (shading - 0.5) * 2.0);
     }
 
-    // p.w kommt aus JS: life * brightness
-    float intensity = clamp(info.x * light, 0.0, 1.0);
-    vec3 bodyColor = vec3(0.32, 0.68, 0.86);   // matter blau-grauer Body
-    vec3 coreColor = vec3(0.70, 0.95, 1.00);   // heller Kern
-    vec3 glowColor = vec3(0.05, 0.55, 0.85);   // dezenter Cyan-Glow
+    // Keep the edges slightly darker to strengthen the rounded appearance
+    float edgeDarkening = mix(0.68, 1.0, surfaceDepth);
+    shadedColor *= edgeDarkening;
 
-    float bodyA = body * 0.92 * intensity;
-    float coreA = core * 0.35 * intensity;
-    float glowA = glow * 0.10 * intensity;
+    float bodyAlpha = body * intensity;
 
-    col += bodyColor * bodyA;
-    col += coreColor * coreA;
-    col += glowColor * glowA;
-
-    outAlpha += bodyA;
-    outAlpha += coreA;
-    outAlpha += glowA;
+    colorOutput += shadedColor * bodyAlpha;
+    alphaOutput += bodyAlpha;
   }
 
-  gl_FragColor = vec4(col, clamp(outAlpha, 0.0, 1.0));
+  gl_FragColor = vec4(colorOutput, clamp(alphaOutput, 0.0, 1.0));
 }
 `;

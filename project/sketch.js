@@ -1,30 +1,3 @@
-
-function setup_deact() {
-  createCanvas(windowWidth, windowHeight);
-  pixelDensity(1);
-  frameRateP = createP();
-
-  aquarium = new Statue();
-
-  for (let i = 0; i < min(codTable.getRowCount(), 5); i++) {
-    let row = codTable.getRow(i).obj;
-
-    let x = random(-WORLD.w * 0.45, WORLD.w * 0.45);
-    let y = random(-WORLD.h * 0.35, WORLD.h * 0.35);
-    let z = random(-WORLD.d * 0.25, WORLD.d * 0.25);
-
-    codSwarms.push(
-      //new DataFishSwarmGPU(row, x, y, z, 60)
-      new FishSwarm2(row, x, y, z)
-    );
-
-    initWorld();
-  }
-
-  trailLayer = createGraphics(width, height);
-  trailLayer.clear();
-}
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
   pixelDensity(1);
@@ -50,8 +23,8 @@ function setup() {
 
     codSwarms.push(
       new FishSwarm3(row, x, y, z, {
-        minFish: 3,
-        maxFish: 45,
+        minFish: 5,
+        maxFish: 190,
         minRadius: 90,
         maxRadius: 260,
         maxParticles: MAX_SHADER_PARTICLES
@@ -61,34 +34,6 @@ function setup() {
 
   trailLayer = createGraphics(width, height);
   trailLayer.clear();
-}
-
-function draw_deact() {
-  frameRateP.html(round(frameRate()));
-  background(3, 8, 14);
-
-  image(trailLayer, 0, 0);
-
-  drawGlowBackground();
-
-  aquarium.draw();
-
-  currentYear += yearSpeed;
-
-  let year = floor(currentYear);
-
-  if (year > 2020) {
-    year = 2020;
-  }
-
-  for (let swarm of codSwarms) {
-    swarm.setYear(year);
-    swarm.update();
-    swarm.draw();
-  }
-  
-
-  drawInterface(year);
 }
 
 function draw() {
@@ -106,7 +51,7 @@ function draw() {
   if (year > 2020) year = 2020;
 
   shaderLayer.clear();
-  shaderLayer.blendMode(ADD);
+  shaderLayer.blendMode(BLEND);
 
   for (let i = 0; i < codSwarms.length; i++) {
     codSwarms[i].setYear(year);
@@ -143,7 +88,7 @@ function mousePressed() {
   clickGlows.push(new ClickGlow(mouseX, mouseY));
   clickForces.push(new ClickForce(mouseX, mouseY));
   
-  stage++;
+  //stage++;
 
   if (stage > 5) {
     stage = 0;
