@@ -34,11 +34,100 @@ function setup() {
 
   trailLayer = createGraphics(width, height);
   trailLayer.clear();
+
+  planktonShader = createShader(planktonVert, planktonFrag);
+  planktonShaderLayer = createGraphics(width, height, WEBGL);
+  planktonShaderLayer.pixelDensity(1);
+  planktonShaderLayer.clear();
+
+  planktonGroup = new PlanktonGroup3D(0, 0, 0, {
+    count: 200,
+    maxParticles: MAX_PLANKTON_PARTICLES,
+    minSize: 0.1,
+    maxSize: 1.0,
+    maxSpeed: 0.16,
+    noiseStrength: 0.008
+  });
+
+  coralLineLayer = createGraphics(width, height);
+  coralGlowMaskLayer = createGraphics(width, height);
+  coralGlowLayer = createGraphics(width, height, WEBGL);
+
+  coralLineLayer.pixelDensity(1);
+  coralGlowMaskLayer.pixelDensity(1);
+  coralGlowLayer.pixelDensity(1);
+
+  coralGlowShader = createShader(coralGlowVert, coralGlowFrag);
+
+  coralDLA = new CoralDLA2D({
+    seedCount: 5,
+    maxNodes: 4000,
+    walkersPerFrame: 6,
+    stepsPerWalker: 200,
+    stepSize: 2.2,
+    nodeSpacing: 3.2,
+    stickDistance: 5.0,
+    spawnDistance: 45,
+    killDistance: 180,
+    inwardBias: 0.6,
+    directionPersistence: 0.55,
+    randomStrength: 0.32,
+    fadeDuration: 60,
+    animateSegmentLength: true,
+    minWidth: 0.7,
+    maxWidth: 5.5,
+    generationWidthDecay: 0.018,
+    depthVariation: 0.055
+  });
+
+  waterTemperatureSurface = new WaterTemperatureSurface({
+    temperature: 0.5,
+    opacity: 0.5,
+    speed: 0.5
+  });
+
+  pollutionField = new PollutionField({
+    pollution: 0.45,
+
+    maxPatches: 32,
+    maxParticles: 800,
+
+    minPatchRadius: 30,
+    maxPatchRadius: 95,
+
+    patchOpacity: 0.5,
+    particleOpacity: 0.9,
+
+    driftSpeed: 0.2,
+    rotationSpeed: 0.0004,
+
+    patchColor: "#676767",
+    particleColor: "#8A8A8A"
+  });
+
+  pollutionParticles =
+    new PollutionParticleField({
+      pollution: 0.65,
+      maxParticles: 1000,
+      opacity: 0.55,
+      driftSpeed: 0.3,
+      color: "#858585"
+    });
 }
 
 function draw() {
   frameRateP.html(round(frameRate()));
   background(3, 8, 14);
+
+  waterTemperatureSurface.draw();
+
+  planktonShaderLayer.clear();
+  planktonShaderLayer.blendMode(BLEND);
+
+  planktonGroup.update();
+  planktonGroup.drawShader(planktonShaderLayer, planktonShader);
+
+  image(planktonShaderLayer, 0, 0);
 
   image(trailLayer, 0, 0);
 
@@ -81,7 +170,20 @@ function draw() {
     }
   }
 
-  drawInterface(year);
+  //coralDLA.update();
+
+  if (!coralDLA.finished) {
+    //drawCoralLines(coralDLA);
+    //drawCoralGlow();
+  }
+
+  //image(coralGlowLayer, 0, 0);
+  //image(coralLineLayer, 0, 0);
+
+  //pollutionField.draw();
+  pollutionParticles.draw();
+  
+
 }
 
 function mousePressed() {

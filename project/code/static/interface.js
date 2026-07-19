@@ -13,7 +13,6 @@ function drawInterface(year) {
   textSize(12);
   textAlign(LEFT, TOP);
 
-  text("STAGE " + stage, 24, 24);
   text("YEAR " + year, 24, 44);
   text("Gadus morhua / Atlantic cod", 24, 64);
 }

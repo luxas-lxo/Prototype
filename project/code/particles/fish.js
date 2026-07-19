@@ -19,7 +19,8 @@ class FishSwarm3 {
     this.positions = [];
     this.velocities = [];
     this.sizes = [];
-    this.life = [];
+    this.life = [];   // Fade in/out
+    this.age = [];    // Actual age
     this.noiseOffsets = [];
     this.colors = [];
     this.lastTrailPositions = [];
@@ -51,8 +52,9 @@ class FishSwarm3 {
     for (let i = 0; i < this.maxParticles; i++) {
       this.positions.push(createVector(this.pos.x + random(-this.rad, this.rad), this.pos.y + random(-this.rad * 0.5, this.rad * 0.5), this.pos.z + random(-this.rad, this.rad)));
       this.velocities.push(p5.Vector.random3D().mult(random(0.2, 1.0)));
-      this.sizes.push(random(5, 11));
+      this.sizes.push(random(2, 6));
       this.life.push(1.0);
+      this.age.push(random(1.0));
       this.noiseOffsets.push(random(10000));
       this.colors.push(color(random(FISH_COLORS)));
       this.lastTrailPositions.push(null);
@@ -140,6 +142,8 @@ class FishSwarm3 {
 
       this.drawTrail(i, position);
       this.constrainFishToSwarm(i, distanceToCenter);
+
+      this.age[i] += AGE_SPEED;
     }
   }
 
@@ -194,11 +198,14 @@ class FishSwarm3 {
         const position2D = calc_xy(position3D.x, position3D.y, position3D.z);
         const scale = calc_scaling(position3D.x, position3D.y, position3D.z);
         const velocity = this.velocities[i];
-        const angle = atan2(velocity.y, velocity.x);
+        const angle = atan2(velocity.y, velocity.x) + PI;
         const fishColor = this.colors[i];
 
+        let ageFade = 1.0 - this.age[i];
+        ageFade = constrain(ageFade, 0, 1);
+
         particleData.push(position2D.x, position2D.y, this.sizes[i] * scale, angle);
-        particleInfo.push(red(fishColor) / 255, green(fishColor) / 255, blue(fishColor) / 255, this.life[i] * this.brightness);
+        particleInfo.push(red(fishColor) / 255, green(fishColor) / 255, blue(fishColor) / 255, this.life[i] * this.brightness * ageFade);
       } else {
         particleData.push(0, 0, 0, 0);
         particleInfo.push(0, 0, 0, 0);
