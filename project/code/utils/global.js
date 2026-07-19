@@ -1,89 +1,136 @@
-let fishSwarms = [];
-let clickForces = [];
-let clickGlows = [];
+// -----------------------------------------------------------------------------
+// TIME AND DATA PROGRESSION
+// -----------------------------------------------------------------------------
 
+// Current year represented by the fish biomass visualization.
+let currentYear = 1970;
+
+// Number of animation frames used to represent one data year.
+const FRAMES_PER_YEAR = 250;
+
+// Amount by which the current year advances during each frame.
+let yearSpeed =
+  1 / FRAMES_PER_YEAR;
+
+
+// -----------------------------------------------------------------------------
+// FISH
+// -----------------------------------------------------------------------------
+
+// Loaded fish biomass dataset.
 let codTable;
+
+// Active biomass-driven fish swarms.
 let codSwarms = [];
 
-let currentYear = 1970;
-const FRAMES_PER_YEAR = 250;
-let yearSpeed = 1 / FRAMES_PER_YEAR;
-const FISH_FADE_IN_SPEED = 0.015;
-const AGE_SPEED = 1 / (30 * FRAMES_PER_YEAR); 
+// Legacy fish swarm collection.
+// let fishSwarms = [];
 
+// Layer used to preserve and display fish movement trails.
 let trailLayer;
+
+// Shader used to render the fish particles.
 let fishShader;
+
+// Off-screen WEBGL layer used by the fish shader.
 let shaderLayer;
 
+
+// -----------------------------------------------------------------------------
+// PLANKTON
+// -----------------------------------------------------------------------------
+
+// Shader used to render the plankton particles.
 let planktonShader;
+
+// Off-screen WEBGL layer used by the plankton shader.
 let planktonShaderLayer;
+
+// Plankton particle simulation.
 let planktonGroup;
 
+
+// -----------------------------------------------------------------------------
+// CORAL
+// -----------------------------------------------------------------------------
+
+// Layer containing the visible coral branch lines.
 let coralLineLayer;
+
+// Layer used as the source texture for the coral glow effect.
 let coralGlowMaskLayer;
+
+// Off-screen WEBGL layer containing the final coral glow.
 let coralGlowLayer;
+
+// Shader used to create the coral glow effect.
 let coralGlowShader;
+
+// Diffusion-limited coral growth simulation.
 let coralDLA;
 
+
+// -----------------------------------------------------------------------------
+// WATER TEMPERATURE
+// -----------------------------------------------------------------------------
+
+// Animated water-temperature visualization.
 let waterTemperatureSurface;
 
+
+// -----------------------------------------------------------------------------
+// POLLUTION
+// -----------------------------------------------------------------------------
+
+// CPU-rendered pollution patches and debris particles.
 let pollutionField;
+
+// Shader-rendered pollution fragment particles.
 let pollutionParticles;
 
 
+// -----------------------------------------------------------------------------
+// CLICK INTERACTION
+// -----------------------------------------------------------------------------
+
+// Temporary forces created when the canvas is clicked.
+let clickForces = [];
+
+// Temporary visual glow effects created when the canvas is clicked.
+let clickGlows = [];
+
+
+// -----------------------------------------------------------------------------
+// AQUARIUM AND STAGE CONTROL
+// -----------------------------------------------------------------------------
+
+// Current presentation or development stage.
 let stage = 0;
+
+// Main aquarium or statue visualization.
 let aquarium;
+
+// -----------------------------------------------------------------------------
+// INTERFACE AND DEBUGGING
+// -----------------------------------------------------------------------------
+
+// HTML element used to display the current frame rate.
 let frameRateP;
 
-const rand = 0.15;
 
-// Maximum number of fish simulated and rendered per swarm
-const SHADER_PARTICLE_LIMIT = 80;
-const MAX_SHADER_PARTICLES = SHADER_PARTICLE_LIMIT;
+// -----------------------------------------------------------------------------
+// SHARED VALUES
+// -----------------------------------------------------------------------------
 
-// Available base colors assigned randomly to individual fish
-const FISH_COLORS = [
-    "#0042D6",
-    "#0084D6",
-    "#0400D6",
-    "#00C7D6",
-    "#4A00D6"
-];
+// Shared random or variation factor used by legacy visual systems.
+// const rand = 0.15;
 
-// Maximum number of plankton particles simulated and rendered
-const MAX_PLANKTON_PARTICLES = 200;
-const PLANKTON_COLORS = [
-  "#00EE70", 
-  "#25BA6B", 
-  "#36875C", 
-  "#325442", 
-  "#e2e927"
-];
 
-// Available base colors assigned randomly to individual coral particles
-const MAX_CORAL_SEGMENTS_PER_BATCH = 80;
-const CORAL_COLORS = [
-  "#5500ED", 
-  "#0900ED", 
-  "#A500ED", 
-  "#0042ED", 
-  "#ED00E4", 
-  "#B66CFF"
-];
+// -----------------------------------------------------------------------------
+// SIMULATED WORLD
+// -----------------------------------------------------------------------------
 
-const TEMPERATURE_COLORS = {
-  cold: "#0B005F",
-  neutral: "#00315E",
-  warm: "#ae00de"
-};
-
-const TEMPERATURE_COLORS_ = {
-  cold: "#20005f",
-  neutral: "#5b005e",
-  warm: "#de0051"
-};
-
-// Dimensions of the simulated 3D world
+// Dimensions of the simulated three-dimensional world.
 const WORLD = {
   w: 280 * 2,
   h: 220 * 2,

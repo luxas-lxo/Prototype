@@ -432,38 +432,60 @@ void main() {
     vec2 halfSize =
       particleSize * 0.5;
 
-    float distanceField;
+    float boundingRadius =
+      length(halfSize) + 2.0;
 
-    if (shapeType < 0.5) {
-      distanceField =
-        sdConcaveShard(
-          localPosition,
-          halfSize,
-          seed
-        );
-    } else {
-      distanceField =
-        sdOpenFragment(
-          localPosition,
-          halfSize,
-          seed
-        );
-    }
-
-    float edgeSoftness = 0.8;
-
-    float shapeAlpha =
-      1.0 -
-      smoothstep(
-        0.0,
-        edgeSoftness,
-        distanceField
+    float squaredDistance =
+      dot(
+        localPosition,
+        localPosition
       );
 
-    accumulatedAlpha +=
-      shapeAlpha *
-      particleOpacity *
-      u_opacity;
+    bool hasValidSize =
+      particleSize.x > 0.0 &&
+      particleSize.y > 0.0;
+
+    bool isInsideBounds =
+      squaredDistance <=
+      boundingRadius * boundingRadius;
+
+    if (
+      hasValidSize &&
+      isInsideBounds
+    ) {
+      float distanceField = 100000.0;
+
+      if (shapeType < 0.5) {
+        distanceField =
+          sdConcaveShard(
+            localPosition,
+            halfSize,
+            seed
+          );
+      } else {
+        distanceField =
+          sdOpenFragment(
+            localPosition,
+            halfSize,
+            seed
+          );
+      }
+
+      float edgeSoftness = 0.8;
+
+      float shapeAlpha =
+        1.0 -
+        smoothstep(
+          0.0,
+          edgeSoftness,
+          distanceField
+        );
+
+      accumulatedAlpha +=
+        shapeAlpha *
+        particleOpacity *
+        u_opacity;
+    }
   }
 
   accumulatedAlpha =
@@ -473,10 +495,11 @@ void main() {
       1.0
     );
 
-  gl_FragColor = vec4(
-    u_color *
-    accumulatedAlpha,
-    accumulatedAlpha
-  );
+  gl_FragColor =
+    vec4(
+      u_color *
+      accumulatedAlpha,
+      accumulatedAlpha
+    );
 }
 `;
