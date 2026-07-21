@@ -7,7 +7,32 @@
  */
 function preload() {
   codTable = loadTable(
-    "data/fish2.csv",
+    "data/fish.csv",
+    "csv",
+    "header"
+  );
+
+  planktonTable = loadTable(
+    "data/plankton.csv",
+    "csv",
+    "header"
+  );
+
+  temperatureTable = loadTable(
+    "data/temperature.csv",
+    "csv",
+    "header"
+  );
+
+  pollutionTable = loadTable(
+    "data/pollution.csv",
+    "csv",
+    "header"
+  );
+
+  fishingPressureTable =
+  loadTable(
+    "data/fishing.csv",
     "csv",
     "header"
   );
@@ -119,7 +144,6 @@ function drawFishSystem() {
     const swarm of
     codSwarms
   ) {
-    swarm.setYear(year);
     swarm.update();
 
     swarm.drawShader(
@@ -151,6 +175,48 @@ function updateCurrentYear() {
 
   return floor(
     currentYear
+  );
+}
+
+/**
+ * Updates the dataset year and applies it to all data-driven systems.
+ */
+function updateDatasetYear() {
+  datasetYear =
+    updateCurrentYear();
+
+  if (
+    datasetYear ===
+    lastAppliedDatasetYear
+  ) {
+    return;
+  }
+
+  lastAppliedDatasetYear =
+    datasetYear;
+
+  for (
+    const swarm of codSwarms
+  ) {
+    swarm.setYear(
+      datasetYear
+    );
+  }
+
+  planktonGroup.setYear(
+    datasetYear
+  );
+
+  waterTemperatureSurface.setYear(
+    datasetYear
+  );
+
+  pollutionField.setYear(
+    datasetYear
+  );
+
+  fishingPressureField.setYear(
+    datasetYear
   );
 }
 
@@ -266,12 +332,22 @@ function initializePlanktonSystem() {
   planktonShaderLayer =
     createRenderLayer(true);
 
+  const planktonYearData =
+    createPlanktonYearData(
+      planktonTable
+    );
+
   planktonGroup =
     new PlanktonGroup3D(
       0,
       0,
-      0
+      0,
+      planktonYearData
     );
+
+  planktonGroup.setYear(
+    CONFIG.plankton.data.startYear
+  );
 }
 
 /**
@@ -295,6 +371,185 @@ function drawPlanktonSystem() {
   );
 }
 
+/**
+ * Converts the plankton table into a complete annual value series.
+ *
+ * Missing values before the first valid observation use the first available
+ * value. Gaps between valid observations are linearly interpolated. Missing
+ * values after the final observation remain null.
+ *
+ * @param {p5.Table} table Loaded plankton CSV table.
+ * @returns {Object<number, number|null>} Abundance values indexed by year.
+ */
+function createPlanktonYearData(table) {
+  const rawValues = {};
+
+  const startYear =
+    CONFIG.plankton.data.startYear;
+
+  const endYear =
+    CONFIG.plankton.data.endYear;
+
+  const valueColumn =
+    CONFIG.plankton.data.valueColumn;
+
+  // Read all valid values from the CSV.
+  for (const row of table.getRows()) {
+    const year =
+      Number(
+        row.get("year")
+      );
+
+    const abundance =
+      parsePositiveNumber(
+        row.get(valueColumn)
+      );
+
+    if (
+      Number.isInteger(year) &&
+      year >= startYear &&
+      year <= endYear &&
+      abundance !== null
+    ) {
+      rawValues[year] =
+        constrain(
+          abundance,
+          0,
+          1
+        );
+    }
+  }
+
+  const interpolatedValues = {};
+
+  for (
+    let year = startYear;
+    year <= endYear;
+    year++
+  ) {
+    const exactValue =
+      rawValues[year];
+
+    if (
+      Number.isFinite(
+        exactValue
+      )
+    ) {
+      interpolatedValues[year] =
+        exactValue;
+
+      continue;
+    }
+
+    let previousYear = null;
+    let previousValue = null;
+
+    for (
+      let searchYear = year - 1;
+      searchYear >= startYear;
+      searchYear--
+    ) {
+      const candidate =
+        rawValues[searchYear];
+
+      if (
+        Number.isFinite(
+          candidate
+        )
+      ) {
+        previousYear =
+          searchYear;
+
+        previousValue =
+          candidate;
+
+        break;
+      }
+    }
+
+    let nextYear = null;
+    let nextValue = null;
+
+    for (
+      let searchYear = year + 1;
+      searchYear <= endYear;
+      searchYear++
+    ) {
+      const candidate =
+        rawValues[searchYear];
+
+      if (
+        Number.isFinite(
+          candidate
+        )
+      ) {
+        nextYear =
+          searchYear;
+
+        nextValue =
+          candidate;
+
+        break;
+      }
+    }
+
+    if (
+      previousValue !== null &&
+      nextValue !== null
+    ) {
+      const progress =
+        (year - previousYear) /
+        (nextYear - previousYear);
+
+      interpolatedValues[year] =
+        lerp(
+          previousValue,
+          nextValue,
+          progress
+        );
+    } else if (
+      nextValue !== null
+    ) {
+      // Copy the first available value into empty starting years.
+      interpolatedValues[year] =
+        nextValue;
+    } else {
+      // Do not invent values after the final valid observation.
+      interpolatedValues[year] =
+        null;
+    }
+  }
+
+  return interpolatedValues;
+}
+
+/**
+ * Parses a raw value as a positive finite number.
+ *
+ * @param {*} rawValue Value read from a dataset.
+ * @returns {number|null} Parsed number or null when invalid.
+ */
+function parsePositiveNumber(
+  rawValue
+) {
+  if (
+    rawValue === undefined ||
+    rawValue === null ||
+    String(rawValue).trim() === ""
+  ) {
+    return null;
+  }
+
+  const value =
+    Number(rawValue);
+
+  return (
+    Number.isFinite(value) &&
+    value >= 0
+  )
+    ? value
+    : null;
+}
 
 // -----------------------------------------------------------------------------
 // CORAL
@@ -766,12 +1021,33 @@ function drawCoralGlow() {
 // -----------------------------------------------------------------------------
 
 /**
- * Initializes temperature and pollution visual systems.
+ * Initializes the water-temperature visualization.
+ */
+function initializeTemperatureSystem() {
+  const temperatureYearData =
+    createTemperatureYearData(
+      temperatureTable
+    );
+
+  waterTemperatureSurface =
+    new WaterTemperatureSurface(
+      temperatureYearData
+    );
+}
+
+/**
+ * Initializes pollution visual systems.
  */
 function initializeEnvironmentSystems() {
-  waterTemperatureSurface = new WaterTemperatureSurface();
+  const pollutionYearData =
+    createPollutionYearData(
+      pollutionTable
+    );
 
-  pollutionField =new PollutionField();
+  pollutionField =
+    new PollutionField(
+      pollutionYearData
+    );
 
   pollutionParticles =new PollutionParticleField();
 
@@ -805,6 +1081,121 @@ function drawBackgroundLayers() {
   );
 
   waterTemperatureSurface.draw();
+}
+
+/**
+ * Converts the temperature table into annual numeric values.
+ *
+ * @param {p5.Table} table Loaded temperature CSV table.
+ * @returns {Object<number, number>} Temperature values indexed by year.
+ */
+function createTemperatureYearData(table) {
+  const yearlyValues = {};
+
+  for (const row of table.getRows()) {
+    const year =
+      Number(
+        row.get("year")
+      );
+
+    const temperature =
+      Number(
+        row.get(
+          CONFIG.temperature.data
+            .valueColumn
+        )
+      );
+
+    if (
+      Number.isFinite(year) &&
+      Number.isFinite(temperature)
+    ) {
+      yearlyValues[year] =
+        temperature;
+    }
+  }
+
+  return yearlyValues;
+}
+
+/**
+ * Converts the pollution table into normalized annual values.
+ *
+ * Years before the first observation are assigned zero pollution. Exact
+ * dataset values are retained without interpolation. Years after the final
+ * observation remain null.
+ *
+ * @param {p5.Table} table Loaded pollution CSV table.
+ * @returns {Object<number, number|null>} Pollution values indexed by year.
+ */
+function createPollutionYearData(table) {
+  const yearlyValues = {};
+
+  const startYear =
+    CONFIG.pollution.data.startYear;
+
+  const endYear =
+    CONFIG.pollution.data.endYear;
+
+  const firstDataYear =
+    CONFIG.pollution.data.firstDataYear;
+
+  const valueColumn =
+    CONFIG.pollution.data.valueColumn;
+
+  // Initialize years before the dataset with zero pollution.
+  for (
+    let year = startYear;
+    year <= endYear;
+    year++
+  ) {
+    yearlyValues[year] =
+      year < firstDataYear
+        ? 0
+        : null;
+  }
+
+  // Store only exact valid values from the CSV.
+  for (const row of table.getRows()) {
+    const year =
+      Number(
+        row.get("year")
+      );
+
+    const rawValue =
+      row.get(valueColumn);
+
+    if (
+      rawValue === undefined ||
+      rawValue === null ||
+      String(rawValue).trim() === ""
+    ) {
+      continue;
+    }
+
+    const normalizedPollution =
+      Number(rawValue);
+
+    if (
+      !Number.isInteger(year) ||
+      !Number.isFinite(
+        normalizedPollution
+      ) ||
+      year < startYear ||
+      year > endYear
+    ) {
+      continue;
+    }
+
+    yearlyValues[year] =
+      constrain(
+        normalizedPollution,
+        0,
+        1
+      );
+  }
+
+  return yearlyValues;
 }
 
 /**
@@ -886,6 +1277,280 @@ function applyPollutionPostProcess() {
 }
 
 // -----------------------------------------------------------------------------
+// FISHING
+// -----------------------------------------------------------------------------
+
+/**
+ * Creates normalized annual fishing-pressure values from catch data.
+ *
+ * The complete annual series is lightly smoothed and normalized using robust
+ * percentile limits so isolated extreme years do not control the visual scale.
+ *
+ * @param {p5.Table} table Loaded fishing catch table.
+ * @returns {Object<number, number>} Normalized pressure values indexed by year.
+ */
+function createFishingPressureYearData(
+  table
+) {
+  const config =
+    CONFIG.fishingPressure.data;
+
+  const rawValues = {};
+
+  for (const row of table.getRows()) {
+    const year =
+      Number(
+        row.get("year")
+      );
+
+    const rawValue =
+      row.get(
+        config.valueColumn
+      );
+
+    if (
+      rawValue === undefined ||
+      rawValue === null ||
+      String(rawValue).trim() === ""
+    ) {
+      continue;
+    }
+
+    const catchTonnes =
+      Number(rawValue);
+
+    if (
+      !Number.isInteger(year) ||
+      !Number.isFinite(catchTonnes) ||
+      catchTonnes < 0
+    ) {
+      continue;
+    }
+
+    rawValues[year] =
+      catchTonnes;
+  }
+
+  const smoothedValues =
+    createSmoothedYearValues(
+      rawValues,
+      config.startYear,
+      config.endYear,
+      config.smoothingRadius
+    );
+
+  const validValues =
+    Object.values(
+      smoothedValues
+    ).filter(
+      Number.isFinite
+    );
+
+  const lowerBound =
+    calculatePercentile(
+      validValues,
+      config.lowerPercentile
+    );
+
+  const upperBound =
+    calculatePercentile(
+      validValues,
+      config.upperPercentile
+    );
+
+  const normalizedValues = {};
+
+  for (
+    let year = config.startYear;
+    year <= config.endYear;
+    year++
+  ) {
+    const value =
+      smoothedValues[year];
+
+    if (!Number.isFinite(value)) {
+      normalizedValues[year] =
+        null;
+
+      continue;
+    }
+
+    let normalized =
+      map(
+        value,
+        lowerBound,
+        upperBound,
+        0,
+        1
+      );
+
+    normalized =
+      constrain(
+        normalized,
+        0,
+        1
+      );
+
+    normalized =
+      0.5 +
+      (
+        normalized -
+        0.5
+      ) *
+      config.visualContrast;
+
+    normalized =
+      constrain(
+        normalized,
+        0,
+        1
+      );
+
+    normalizedValues[year] =
+      lerp(
+        config.minimumPressure,
+        1,
+        normalized
+      );
+  }
+
+  return normalizedValues;
+}
+
+/**
+ * Creates a centered moving average for a complete annual value series.
+ *
+ * @param {Object<number, number>} values Raw values indexed by year.
+ * @param {number} startYear First dataset year.
+ * @param {number} endYear Final dataset year.
+ * @param {number} radius Number of neighboring years on each side.
+ * @returns {Object<number, number|null>} Smoothed annual values.
+ */
+function createSmoothedYearValues(
+  values,
+  startYear,
+  endYear,
+  radius
+) {
+  const smoothedValues = {};
+
+  for (
+    let year = startYear;
+    year <= endYear;
+    year++
+  ) {
+    const localValues = [];
+
+    for (
+      let offset = -radius;
+      offset <= radius;
+      offset++
+    ) {
+      const nearbyValue =
+        values[
+          year + offset
+        ];
+
+      if (
+        Number.isFinite(
+          nearbyValue
+        )
+      ) {
+        localValues.push(
+          nearbyValue
+        );
+      }
+    }
+
+    if (
+      localValues.length === 0
+    ) {
+      smoothedValues[year] =
+        null;
+
+      continue;
+    }
+
+    const sum =
+      localValues.reduce(
+        (
+          total,
+          value
+        ) =>
+          total + value,
+        0
+      );
+
+    smoothedValues[year] =
+      sum /
+      localValues.length;
+  }
+
+  return smoothedValues;
+}
+
+/**
+ * Calculates a percentile from a numeric value array.
+ *
+ * @param {number[]} values Numeric values.
+ * @param {number} percentile Percentile between zero and one.
+ * @returns {number} Interpolated percentile value.
+ */
+function calculatePercentile(
+  values,
+  percentile
+) {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const sortedValues =
+    [...values].sort(
+      (a, b) =>
+        a - b
+    );
+
+  const position =
+    constrain(
+      percentile,
+      0,
+      1
+    ) *
+    (
+      sortedValues.length -
+      1
+    );
+
+  const lowerIndex =
+    floor(position);
+
+  const upperIndex =
+    ceil(position);
+
+  const interpolation =
+    position -
+    lowerIndex;
+
+  return lerp(
+    sortedValues[lowerIndex],
+    sortedValues[upperIndex],
+    interpolation
+  );
+}
+
+function initializeFishingPressureSystem() {
+  const fishingPressureYearData =
+  createFishingPressureYearData(
+    fishingPressureTable
+  );
+
+fishingPressureField =
+  new FishingPressureField(
+    fishingPressureYearData
+  );
+}
+
+// -----------------------------------------------------------------------------
 // AQUARIUM
 // -----------------------------------------------------------------------------
 
@@ -908,26 +1573,38 @@ function drawAquariumSystem() {
  * @param {number} x Horizontal click position.
  * @param {number} y Vertical click position.
  */
-function createClickEffect(x, y) {
-  clickGlows.push(
-    new ClickGlow(x, y)
+function createClickEffect(
+  x,
+  y
+) {
+  createClickGlow(
+    x,
+    y,
+    {
+      maxRadius: 200,
+      alpha: 100 / 255
+    }
   );
 
-  clickForces.push(
-    new ClickForce(x, y)
+  addClickForce(
+    new ClickForce(
+      x,
+      y
+    )
   );
 }
 
 /**
- * Updates and removes expired click glow and repulsion effects.
+ * Updates, renders, and removes expired click glow and repulsion effects.
  */
 function updateClickEffects() {
   updateClickGlows();
+  drawClickGlows();
   updateClickForces();
 }
 
 /**
- * Draws active click glows and removes expired instances.
+ * Updates active click glows and removes expired instances.
  */
 function updateClickGlows() {
   for (
@@ -939,7 +1616,6 @@ function updateClickGlows() {
     const glow =
       clickGlows[i];
 
-    glow.draw();
     glow.update();
 
     if (glow.dead()) {
@@ -972,6 +1648,256 @@ function updateClickForces() {
         1
       );
     }
+  }
+}
+
+/**
+ * Renders all active click glows through the radial glow shader.
+ */
+function drawClickGlows() {
+  for (
+    const glow of clickGlows
+  ) {
+    clickGlowLayer.push();
+    clickGlowLayer.clear();
+
+    clickGlowLayer.shader(
+      clickGlowShader
+    );
+
+    clickGlowShader.setUniform(
+      "u_resolution",
+      [
+        clickGlowLayer.width,
+        clickGlowLayer.height
+      ]
+    );
+
+    clickGlowShader.setUniform(
+      "u_position",
+      [
+        glow.pos.x,
+        glow.pos.y
+      ]
+    );
+
+    clickGlowShader.setUniform(
+      "u_radius",
+      glow.radius
+    );
+
+    clickGlowShader.setUniform(
+      "u_alpha",
+      glow.alpha
+    );
+
+    clickGlowShader.setUniform(
+      "u_color",
+      [
+        0,
+        120 / 255,
+        160 / 255
+      ]
+    );
+
+    clickGlowLayer.noStroke();
+
+    clickGlowLayer.rect(
+      -clickGlowLayer.width * 0.5,
+      -clickGlowLayer.height * 0.5,
+      clickGlowLayer.width,
+      clickGlowLayer.height
+    );
+
+    clickGlowLayer.resetShader();
+    clickGlowLayer.pop();
+
+    push();
+    blendMode(ADD);
+
+    image(
+      clickGlowLayer,
+      0,
+      0,
+      width,
+      height
+    );
+
+    pop();
+  }
+}
+
+/**
+ * Initializes the shader used to render radial click glows.
+ */
+function initializeClickGlowSystem() {
+  clickGlowLayer =
+    createGraphics(
+      width,
+      height,
+      WEBGL
+    );
+
+  clickGlowLayer.pixelDensity(1);
+
+  clickGlowShader =
+    clickGlowLayer.createShader(
+      clickGlowVert,
+      clickGlowFrag
+    );
+}
+
+/**
+ * Creates one visual glow point and limits the total glow count.
+ *
+ * @param {number} x Screen-space x-coordinate.
+ * @param {number} y Screen-space y-coordinate.
+ */
+function createClickGlow(
+  x,
+  y
+) {
+  clickGlows.push(
+    new ClickGlow(
+      x,
+      y
+    )
+  );
+
+  while (
+    clickGlows.length >
+    CONFIG.click.maxGlows
+  ) {
+    clickGlows.shift();
+  }
+}
+
+/**
+ * Creates evenly spaced glow points between two pointer positions.
+ *
+ * @param {p5.Vector} startPoint Previous pointer position.
+ * @param {p5.Vector} endPoint Current pointer position.
+ */
+function createGlowPointsBetween(
+  startPoint,
+  endPoint
+) {
+  const distance =
+    p5.Vector.dist(
+      startPoint,
+      endPoint
+    );
+
+  const pointCount =
+    max(
+      1,
+      ceil(
+        distance /
+        CONFIG.click.pointDistance
+      )
+    );
+
+  for (
+    let i = 1;
+    i <= pointCount;
+    i++
+  ) {
+    const progress =
+      i / pointCount;
+
+    const x =
+      lerp(
+        startPoint.x,
+        endPoint.x,
+        progress
+      );
+
+    const y =
+      lerp(
+        startPoint.y,
+        endPoint.y,
+        progress
+      );
+
+    createDraggedClickInteraction(
+      x,
+      y
+    );
+  }
+}
+
+/**
+ * Creates one visual glow point and a weaker drag force.
+ *
+ * @param {number} x Screen-space x-coordinate.
+ * @param {number} y Screen-space y-coordinate.
+ */
+function createDraggedClickInteraction(
+  x,
+  y
+) {
+  createClickGlow(
+    x,
+    y
+  );
+
+  const force =
+    new ClickForce(
+      x,
+      y
+    );
+
+  force.strength *= CONFIG.click.drag.strengthMultiplier;
+  force.radius *= CONFIG.click.drag.radiusMultiplier;
+
+  addClickForce(
+    force
+  );
+}
+
+/**
+ * Adds a click force and limits the number of active force instances.
+ *
+ * @param {ClickForce} force Force instance to add.
+ */
+function addClickForce(force) {
+  clickForces.push(
+    force
+  );
+
+  while (
+    clickForces.length >
+    CONFIG.click.maxForces
+  ) {
+    clickForces.shift();
+  }
+}
+
+/**
+ * Creates one visual glow point and limits the total glow count.
+ *
+ * @param {number} x Screen-space x-coordinate.
+ * @param {number} y Screen-space y-coordinate.
+ * @param {Object} options Optional glow appearance overrides.
+ */
+function createClickGlow(
+  x,
+  y,
+  options = {}
+) {
+  clickGlows.push(
+    new ClickGlow(
+      x,
+      y,
+      options
+    )
+  );
+
+  while (
+    clickGlows.length >
+    CONFIG.click.maxGlows
+  ) {
+    clickGlows.shift();
   }
 }
 
@@ -1174,10 +2100,132 @@ function initializeInterface() {
 }
 
 /**
- * Updates the displayed frame-rate value.
+ * Updates the displayed frame rate and current dataset year.
+ *
+ * @param {number} datasetYear Current integer dataset year.
  */
-function updateFrameRateDisplay() {
+function updateFrameRateDisplay(
+  datasetYear
+) {
+  const temperatureText =
+    waterTemperatureSurface &&
+    Number.isFinite(
+      waterTemperatureSurface
+        .currentTemperatureC
+    )
+      ? nf(
+          waterTemperatureSurface
+            .currentTemperatureC,
+          1,
+          2
+        )
+      : "—";
+
   frameRateP.html(
-    round(frameRate())
+    `FPS: ${round(frameRate())}<br>` +
+    `Year: ${datasetYear}<br>` +
+    `Temperature: ${temperatureText} °C`
   );
+}
+
+/**
+ * Starts rendering the animation as a deterministic PNG frame sequence.
+ */
+function startFrameExport() {
+  if (FRAME_EXPORT.active) {
+    return;
+  }
+
+  FRAME_EXPORT.enabled = true;
+  FRAME_EXPORT.active = true;
+  FRAME_EXPORT.currentFrame = 0;
+  FRAME_EXPORT.startFrame = frameCount;
+
+  // Use a fixed simulation frame rate for consistent video timing.
+  frameRate(
+    FRAME_EXPORT.frameRate
+  );
+
+  console.log(
+    `Starting frame export: ${getTotalExportFrames()} frames`
+  );
+}
+
+/**
+ * Saves the completely rendered canvas as one numbered PNG frame.
+ */
+function exportCurrentFrame() {
+  if (
+    !FRAME_EXPORT.enabled ||
+    !FRAME_EXPORT.active
+  ) {
+    return;
+  }
+
+  const totalFrames =
+    getTotalExportFrames();
+
+  if (
+    FRAME_EXPORT.currentFrame >=
+    totalFrames
+  ) {
+    finishFrameExport();
+    return;
+  }
+
+  const frameNumber =
+    String(
+      FRAME_EXPORT.currentFrame
+    ).padStart(
+      6,
+      "0"
+    );
+
+  const fileName =
+    `${FRAME_EXPORT.filePrefix}-${frameNumber}`;
+
+  // Save the actual rendered canvas rather than recording the display.
+  saveCanvas(
+    fileName,
+    "png"
+  );
+
+  FRAME_EXPORT.currentFrame++;
+
+  console.log(
+    `Exported frame ${FRAME_EXPORT.currentFrame} / ${totalFrames}`
+  );
+
+  if (
+    FRAME_EXPORT.currentFrame >=
+    totalFrames
+  ) {
+    finishFrameExport();
+  }
+}
+
+/**
+ * Returns the total number of frames required for the configured video.
+ *
+ * @returns {number} Total frame count.
+ */
+function getTotalExportFrames() {
+  return (
+    FRAME_EXPORT.frameRate *
+    FRAME_EXPORT.durationSeconds
+  );
+}
+
+/**
+ * Stops the frame export after all requested frames have been saved.
+ */
+function finishFrameExport() {
+  FRAME_EXPORT.enabled = false;
+  FRAME_EXPORT.active = false;
+
+  console.log(
+    "Frame export completed."
+  );
+
+  noLoop();
 }

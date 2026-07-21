@@ -549,82 +549,118 @@ void main() {
 
   // Read the already rendered scene.
   vec4 sceneColor =
-  texture2D(
-    u_scene,
-    sceneUv
-  );
+    texture2D(
+      u_scene,
+      sceneUv
+    );
 
-float pollutionSample =
-  texture2D(
-    u_pollutionMask,
-    maskUv
-  ).r;
+  float pollutionSample =
+    texture2D(
+      u_pollutionMask,
+      maskUv
+    ).r;
 
-float pollutionAmount =
-  clamp(
-    pollutionSample *
-    2.0 *
-    u_strength,
-    0.0,
-    1.0
-  );
+  float pollutionAmount =
+    clamp(
+      pollutionSample *
+      2.0 *
+      u_strength,
+      0.0,
+      1.0
+    );
 
-// Background color defined by background(3, 8, 14).
-vec3 backgroundColor =
-  vec3(
-    3.0 / 255.0,
-    8.0 / 255.0,
-    14.0 / 255.0
-  );
-
-// Protect the base background while preserving foreground elements.
-float backgroundDifference =
-  distance(
-    sceneColor.rgb,
-    backgroundColor
-  );
-
-float foregroundAmount =
-  smoothstep(
-    0.015,
-    0.08,
-    backgroundDifference
-  );
-
-pollutionAmount *=
-  foregroundAmount;
-
-float luminance =
-  dot(
-    sceneColor.rgb,
+  // Background color defined by background(3, 8, 14).
+  vec3 backgroundColor =
     vec3(
-      0.299,
-      0.587,
-      0.114
-    )
-  );
+      3.0 / 255.0,
+      8.0 / 255.0,
+      14.0 / 255.0
+    );
 
-float pollutedLuminance =
-  mix(
-    luminance,
-    0.58,
-    0.3
-  );
+  // Protect the base background while preserving foreground elements.
+  float backgroundDifference =
+    distance(
+      sceneColor.rgb,
+      backgroundColor
+    );
 
-vec3 grayscaleColor =
-  vec3(pollutedLuminance);
+  float foregroundAmount =
+    smoothstep(
+      0.015,
+      0.08,
+      backgroundDifference
+    );
 
-vec3 finalColor =
-  mix(
-    sceneColor.rgb,
-    grayscaleColor,
-    pollutionAmount
-  );
+  pollutionAmount *=
+    foregroundAmount;
 
-gl_FragColor =
-  vec4(
-    finalColor,
-    sceneColor.a
-  );
+  // Calculate the perceived brightness of the original scene.
+  float luminance =
+    dot(
+      sceneColor.rgb,
+      vec3(
+        0.299,
+        0.587,
+        0.114
+      )
+    );
+
+  // Remove the warm source color before applying the blue-gray tint.
+  vec3 neutralColor =
+    vec3(luminance);
+
+  // Define a dark-to-light blue-gray palette.
+  vec3 darkPollutionColor =
+    vec3(
+      24.0 / 255.0,
+      39.0 / 255.0,
+      88.0 / 255.0
+    );
+
+  vec3 lightPollutionColor =
+    vec3(
+      152.0 / 255.0,
+      169.0 / 255.0,
+      193.0 / 255.0
+    );
+
+  // Preserve scene brightness while replacing its hue.
+  float adjustedLuminance =
+    smoothstep(
+      0.0,
+      0.85,
+      luminance
+    );
+
+  vec3 blueGrayColor =
+    mix(
+      darkPollutionColor,
+      lightPollutionColor,
+      adjustedLuminance
+    );
+
+  float finalPollutionAmount =
+    pollutionAmount * 0.45;
+
+  // First remove the original chroma.
+  vec3 desaturatedScene =
+    mix(
+      sceneColor.rgb,
+      neutralColor,
+      finalPollutionAmount
+    );
+
+  vec3 finalColor =
+    mix(
+      desaturatedScene,
+      blueGrayColor,
+      finalPollutionAmount
+    );
+
+  gl_FragColor =
+    vec4(
+      finalColor,
+      sceneColor.a
+    );
 }
 `;

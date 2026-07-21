@@ -21,19 +21,25 @@ const CONFIG = {
       ]
     },
 
-    // Controls fish lifetime, fade-in behavior, and aging
+    // Controls fish visibility, fade behavior, and aging
     lifecycle: {
+      // Initial visibility assigned to the complete fish particle pool
+      initialLife: 0.0,
+
       // Interpolation speed used when fish fade into view
       fadeInSpeed: 0.015,
+
+      // Interpolation speed used when fish fade out of view
+      fadeOutSpeed: 0.01,
+
+      // Fish below this visibility are no longer updated or given trails
+      visibilityThreshold: 0.01,
 
       // Amount added to the normalized fish age per frame
       ageSpeed: 1 / (30 * 250),
 
-      // Initial visibility value assigned to newly created fish
-      initialLife: 1.0,
-
       // Maximum normalized initial age assigned randomly to fish
-      initialMaxAge: 1.0
+      initialMaxAge: 0.3
     },
 
     // Controls the overall fish swarm
@@ -214,12 +220,19 @@ const CONFIG = {
   },
 
   plankton: {
+    // Defines the year range and data column used for plankton abundance
+    data: {
+      startYear: 1970,
+      endYear: 2020,
+      valueColumn: "calanus_normalized"
+    },
+
     // Controls particle count and shader-related limits
     rendering: {
       // Maximum number of plankton particles supported by the shader
       maxShaderParticles: 200,
 
-      // Number of active plankton particles
+      // Initial particle count before yearly data is applied
       activeCount: 200,
 
       // Available base colors assigned randomly to plankton particles
@@ -232,10 +245,22 @@ const CONFIG = {
       ]
     },
 
+    // Controls how normalized abundance values affect particle population
+    population: {
+      // Minimum visible particle count at the lowest abundance value
+      minParticles: 20,
+
+      // Maximum visible particle count at the highest abundance value
+      maxParticles: 200,
+
+      // Particles below this visibility are skipped during rendering
+      visibilityThreshold: 0.01
+    },
+
     // Controls the initial distribution around the group center
     distribution: {
       // Fraction of each world dimension used as the default spread
-      worldSpreadFactor: 0.35
+      worldSpreadFactor: 0.6
     },
 
     // Controls the visual size of individual plankton particles
@@ -268,14 +293,17 @@ const CONFIG = {
 
     // Controls particle visibility over time
     lifecycle: {
-      // Initial visibility assigned to new particles
+      // Initial visibility assigned before yearly data is applied
       initialLife: 0.0,
 
       // Maximum normalized visibility
       maxLife: 1.0,
 
-      // Amount added to visibility per frame
-      fadeInSpeed: 0.012
+      // Speed at which newly active particles fade into view
+      fadeInSpeed: 0.012,
+
+      // Speed at which inactive particles fade out of view
+      fadeOutSpeed: 0.008
     },
 
     // Controls the subtle size animation used while rendering
@@ -469,29 +497,41 @@ const CONFIG = {
   },
 
   temperature: {
+    // Defines the available temperature dataset and visual mapping
+    data: {
+      startYear: 1970,
+      endYear: 2020,
+
+      // CSV column containing the annual temperature value
+      valueColumn: "temperature_c",
+
+      // Strengthens small normalized temperature differences visually
+      visualContrast: 1.8
+    },
+
     // Controls the initial state of the temperature visualization
     initialState: {
       // Normalized temperature value between 0 and 1
       temperature: 0.5,
 
       // Overall opacity of the temperature layer
-      opacity: 0.7,
+      opacity: 0.3,
 
       // Animation speed multiplier
       speed: 0.5
     },
 
-    // Controls the colors used for cold, neutral, and warm water
-    colors: {
-      cold: "#0B005F",
-      neutral: "#00315E",
-      warm: "#AE00DE"
+    // Controls smooth transitions between annual temperature values
+    transition: {
+      // Interpolation speed toward the current yearly target
+      interpolationSpeed: 0.015
     },
 
-    colors_: {
-      cold: "#20005F",
-      neutral: "#5B005E",
-      warm: "#DE0051"
+    // Controls the colors used for cold, neutral, and warm water
+    colors: {
+      cold: "#003658",
+      neutral: "#00005e",
+      warm: "#260059"
     },
 
     // Controls the off-screen WEBGL rendering layer
@@ -505,38 +545,82 @@ const CONFIG = {
   },
 
   pollution: {
+    // Defines the available pollution dataset and its visual mapping
+    data: {
+      startYear: 1970,
+      endYear: 2020,
+
+      // CSV column containing the normalized annual plastic stock
+      valueColumn: "plastic_normalized",
+
+      // First year containing actual plastic-stock data
+      firstDataYear: 2000,
+
+      // Final year containing actual plastic-stock data
+      lastDataYear: 2019
+    },
+
+    // Controls smooth changes between annual pollution values
+    transition: {
+      // Interpolation speed toward the current yearly target
+      interpolationSpeed: 0.012,
+
+      // Maximum number of patches added or removed per frame
+      patchCountStep: 1,
+
+      // Maximum number of particles added or removed per frame
+      particleCountStep: 5
+    },
+
     // Controls the CPU-rendered pollution patches and particles
     field: {
         // Initial normalized pollution level
-        pollution: 0.45,
+        pollution: 0.0,
 
         // Maximum numbers of visible elements at full pollution
-        maxPatches: 32,
-        maxParticles: 800,
+        maxPatches: 12,
+        maxParticles: 0,
 
         // Overall opacity of patches and individual particles
         opacity: {
-        patch: 0.5,
-        particle: 0.9
+          patch: 0.5,
+          particle: 0.9
         },
 
         // Controls the random radius of pollution patches
         patchRadius: {
-            min: 30,
-            max: 95
+          min: 30,
+          max: 95
         },
 
         // Controls the irregular polygon shape of each patch
         patchShape: {
-            vertexCount: {
-                min: 5,
-                maxExclusive: 9
-            },
+          vertexCount: {
+              min: 5,
+              maxExclusive: 9
+          },
 
-            radiusFactor: {
-                min: 0.55,
-                max: 1.0
-            }
+          radiusFactor: {
+              min: 0.55,
+              max: 1.0
+          }
+        },
+
+        growth: {
+          // Initial scale assigned to newly created patches
+          initialScale: 0.02,
+
+          // Final scale of a fully visible patch
+          targetScale: 1.0,
+
+          // Interpolation speed used while patches grow
+          growSpeed: 0.025,
+
+          // Interpolation speed used while patches shrink
+          shrinkSpeed: 0.018,
+
+          // Scale below which a shrinking patch is removed
+          removalThreshold: 0.01
         },
 
         // Controls patch movement
@@ -630,7 +714,7 @@ const CONFIG = {
 
         // Colors used by the CPU-rendered pollution field
         colors: {
-            patch: "#676767",
+            patch: "#a3b1cc",
             particle: "#8A8A8A"
         },
 
@@ -750,6 +834,31 @@ const CONFIG = {
   },
 
   fishingPressure: {
+    data: {
+      startYear: 1970,
+      endYear: 2020,
+
+      // Use cod-specific catch as an approximation of fishing pressure.
+      valueColumn: "cod_catch_tonnes",
+
+      // Smooth short-term fluctuations without removing long-term trends.
+      smoothingRadius: 1,
+
+      // Robust normalization limits.
+      lowerPercentile: 0.05,
+      upperPercentile: 0.95,
+
+      // Keeps some activity even during low-catch years.
+      minimumPressure: 0.08,
+
+      // Optional visual contrast around the normalized midpoint.
+      visualContrast: 1.15
+    },
+
+    transition: {
+      interpolationSpeed: 0.012
+    },
+
     // Controls the global intensity of fishing-pressure activity
     state: {
       pressure: 1.0
@@ -798,8 +907,8 @@ const CONFIG = {
       },
 
       strength: {
-        min: 0.15,
-        max: 1.5
+        min: 3.0,
+        max: 5.0
       },
 
       turbulenceStrength: 0.18,
@@ -813,9 +922,88 @@ const CONFIG = {
       zRangeMultiplier: 0.18
     },
 
+    visual: {
+      enabled: true,
+
+      // Number of flow lines rendered per pulse.
+      lineCount: {
+        min: 3,
+        max: 5
+      },
+
+      // Number of points used to build each curved line.
+      pointCount: 30,
+
+      // Visible line length relative to the physical pulse length.
+      lengthMultiplier: 0.18,
+
+      // Maximum lateral spread relative to the world height.
+      spreadMultiplier: 0.34,
+
+      // Controls the animated curvature of the lines.
+      noise: {
+        spatialScale: 0.035,
+        timeSpeed: 0.006,
+        displacement: 42,
+        waveCount: 3.5,
+
+        // Relative contribution of noise and sine movement
+        noiseWeight: 0.55,
+        waveWeight: 0.45
+      },
+
+      // Controls appearance.
+      strokeWeight: {
+        min: 0.6,
+        max: 1.8
+      },
+
+      opacity: {
+        min: 20,
+        max: 85
+      },
+
+      colors: [
+        "#7FAFC7",
+        "#6ab1cb",
+        "#317392",
+        "#556a72"
+      ],
+
+      fade: {
+        // Number of frames used to fade in newly spawned flow lines
+        inFrames: 5,
+
+        // Number of frames used to fade out flow lines near the end of their lifetime
+        outFrames: 8
+      },
+
+      centerOffset: {
+      // Offset along the pulse direction.
+      longitudinal: 120,
+
+      // Sideways offset across the pulse.
+      lateral: 90,
+
+      // Offset along the local vertical axis.
+      vertical: 35
+    },
+    },
+
     // Controls optional debug rendering
     debug: {
-      draw: false
+      draw: true
+    }
+  },
+
+  click: {
+    pointDistance: 18,
+    maxGlows: 40,
+    maxForces: 40,
+
+    drag: {
+      radiusMultiplier: 0.65,
+      strengthMultiplier: 0.25
     }
   }
 };

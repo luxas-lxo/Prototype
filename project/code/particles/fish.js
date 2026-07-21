@@ -61,6 +61,7 @@ class FishSwarm3 {
     this.velocities = [];
     this.sizes = [];
     this.life = [];
+    this.targetLife = [];
     this.age = [];
     this.noiseOffsets = [];
     this.colors = [];
@@ -88,10 +89,10 @@ class FishSwarm3 {
     // Initialize with the first available value.
     this.currentBiomass =
       this.values.find(
-        value => Number.isFinite(value) && value > 0
+        value =>
+          Number.isFinite(value) &&
+          value > 0
       ) ?? this.maxBiomass;
-
-    this.setFromBiomass(this.currentBiomass);
 
     // Initialize dynamic swarm properties.
     this.rad =
@@ -100,17 +101,32 @@ class FishSwarm3 {
     this.targetRadius =
       this.rad;
 
-    this.activeCount = 0;
     this.targetCount = 0;
 
     this.brightness =
-      CONFIG.fish.swarm.initialProperties.brightness;
+      CONFIG.fish.swarm.initialProperties
+        .brightness;
 
     this.cohesion =
-      CONFIG.fish.swarm.initialProperties.cohesion;
+      CONFIG.fish.swarm.initialProperties
+        .cohesion;
 
     this.speedLimit =
-      CONFIG.fish.swarm.initialProperties.speedLimit;
+      CONFIG.fish.swarm.initialProperties
+        .speedLimit;
+
+    // Define a stable randomized order for population changes.
+    this.activationOrder =
+      shuffle(
+        Array.from(
+          {
+            length:
+              this.maxParticles
+          },
+          (_, index) =>
+            index
+        )
+      );
 
     // Create the complete fish particle pool once.
     for (
@@ -160,6 +176,8 @@ class FishSwarm3 {
         CONFIG.fish.lifecycle.initialLife
       );
 
+      this.targetLife.push(0);
+
       this.age.push(
         random(
           CONFIG.fish.lifecycle.initialMaxAge
@@ -187,9 +205,6 @@ class FishSwarm3 {
     this.setFromBiomass(
       this.currentBiomass
     );
-
-    this.activeCount =
-      this.targetCount;
   }
 
   /**
@@ -241,77 +256,133 @@ class FishSwarm3 {
     );
 
     this.brightness = lerp(
-      CONFIG.fish.individual.biomass.brightness.min,
-      CONFIG.fish.individual.biomass.brightness.max,
+      CONFIG.fish.individual.biomass
+        .brightness.min,
+      CONFIG.fish.individual.biomass
+        .brightness.max,
       normalizedBiomass
     );
 
     this.cohesion = lerp(
-      CONFIG.fish.individual.biomass.cohesion.min,
-      CONFIG.fish.individual.biomass.cohesion.max,
+      CONFIG.fish.individual.biomass
+        .cohesion.min,
+      CONFIG.fish.individual.biomass
+        .cohesion.max,
       normalizedBiomass
     );
 
     this.speedLimit = lerp(
-      CONFIG.fish.individual.biomass.speedLimit.min,
-      CONFIG.fish.individual.biomass.speedLimit.max,
+      CONFIG.fish.individual.biomass
+        .speedLimit.min,
+      CONFIG.fish.individual.biomass
+        .speedLimit.max,
       normalizedBiomass
     );
+
+    this.updateTargetVisibility();
   }
 
   /**
-   * Advances the complete fish swarm simulation by one frame.
+   * Assigns target visibility according to the current biomass population.
    */
+  updateTargetVisibility() {
+    for (
+      let orderIndex = 0;
+      orderIndex < this.maxParticles;
+      orderIndex++
+    ) {
+      const fishIndex =
+        this.activationOrder[
+          orderIndex
+        ];
+
+      const previousTarget =
+        this.targetLife[
+          fishIndex
+        ];
+
+      const nextTarget =
+        orderIndex <
+        this.targetCount
+          ? 1
+          : 0;
+
+      this.targetLife[
+        fishIndex
+      ] =
+        nextTarget;
+
+      // Reset lifecycle and trail data when a fish becomes active again.
+      if (
+        previousTarget === 0 &&
+        nextTarget === 1
+      ) {
+        this.age[fishIndex] = 0;
+
+        this.lastTrailPositions[
+          fishIndex
+        ] = null;
+      }
+    }
+  }
+
+  /**
+   * Gradually moves every fish toward its target visibility.
+   */
+  updateVisibility() {
+    for (
+      let i = 0;
+      i < this.maxParticles;
+      i++
+    ) {
+      const isFadingIn =
+        this.targetLife[i] >
+        this.life[i];
+
+      const fadeSpeed =
+        isFadingIn
+          ? CONFIG.fish.lifecycle
+              .fadeInSpeed
+          : CONFIG.fish.lifecycle
+              .fadeOutSpeed;
+
+      this.life[i] = lerp(
+        this.life[i],
+        this.targetLife[i],
+        fadeSpeed
+      );
+
+      if (
+        abs(
+          this.life[i] -
+          this.targetLife[i]
+        ) < 0.001
+      ) {
+        this.life[i] =
+          this.targetLife[i];
+      }
+    }
+  }
+
+  /**
+  * Advances the complete fish swarm simulation by one frame.
+  */
   update() {
-    this.updateActiveCount();
+    this.updateVisibility();
+    this.updateSwarmRadius();
     this.updateSwarmCenter();
     this.updateFish();
   }
 
   /**
-   * Moves the active fish count and swarm radius toward their target values.
-   *
-   * Fish are activated or deactivated one at a time to create gradual
-   * population changes.
-   */
-  updateActiveCount() {
+  * Gradually moves the swarm radius toward its current target.
+  */
+  updateSwarmRadius() {
     this.rad = lerp(
       this.rad,
       this.targetRadius,
-      CONFIG.fish.swarm.radius.interpolationSpeed
-    );
-
-    if (
-      this.activeCount <
-      this.targetCount
-    ) {
-      const newFishIndex =
-        this.activeCount;
-
-      // Restart the fade-in process when a fish becomes active.
-      this.life[newFishIndex] = 0;
-
-      // Prevent a new trail from connecting to an outdated position.
-      this.lastTrailPositions[newFishIndex] =
-        null;
-
-      this.activeCount++;
-    } else if (
-      this.activeCount >
-      this.targetCount
-    ) {
-      this.activeCount--;
-
-      this.life[this.activeCount] = 0;
-
-      this.lastTrailPositions[this.activeCount] =
-        null;
-    }
-
-    this.activeCount = constrain(
-      this.activeCount,
-      0,
-      this.maxParticles
+      CONFIG.fish.swarm.radius
+        .interpolationSpeed
     );
   }
 
@@ -366,20 +437,34 @@ class FishSwarm3 {
 
   /**
    * Updates the movement, interaction forces, trails, boundaries, and age of
-   * every active fish.
+   * every visible or currently activating fish.
    */
   updateFish() {
+    const visibilityThreshold =
+      CONFIG.fish.lifecycle
+        .visibilityThreshold;
+
     for (
       let i = 0;
-      i < this.activeCount;
+      i < this.maxParticles;
       i++
     ) {
-      // Gradually fade newly activated fish into view.
-      this.life[i] = lerp(
-        this.life[i],
-        1.0,
-        CONFIG.fish.lifecycle.fadeInSpeed
-      );
+      const isVisible =
+        this.life[i] >
+        visibilityThreshold;
+
+      const isBecomingVisible =
+        this.targetLife[i] > 0;
+
+      if (
+        !isVisible &&
+        !isBecomingVisible
+      ) {
+        this.lastTrailPositions[i] =
+          null;
+
+        continue;
+      }
 
       const position =
         this.positions[i];
@@ -416,7 +501,8 @@ class FishSwarm3 {
       // Generate independent noise-based movement for the fish.
       const noiseTime =
         frameCount *
-        CONFIG.fish.individual.movement.noiseTimeSpeed;
+        CONFIG.fish.individual.movement
+          .noiseTimeSpeed;
 
       const noiseForce = createVector(
         noise(
@@ -426,21 +512,29 @@ class FishSwarm3 {
 
         noise(
           this.noiseOffsets[i] +
-          CONFIG.fish.individual.movement.noiseYOffset +
+          CONFIG.fish.individual.movement
+            .noiseYOffset +
           noiseTime
         ) - 0.5,
 
         noise(
           this.noiseOffsets[i] +
-          CONFIG.fish.individual.movement.noiseZOffset +
+          CONFIG.fish.individual.movement
+            .noiseZOffset +
           noiseTime
         ) - 0.5
       ).mult(
-        CONFIG.fish.individual.movement.noiseForce
+        CONFIG.fish.individual.movement
+          .noiseForce
       );
 
-      velocity.add(centerForce);
-      velocity.add(noiseForce);
+      velocity.add(
+        centerForce
+      );
+
+      velocity.add(
+        noiseForce
+      );
 
       // Allow individual fish to inherit part of the swarm-center velocity.
       velocity.add(
@@ -473,7 +567,9 @@ class FishSwarm3 {
         )
       );
 
-      position.add(velocity);
+      position.add(
+        velocity
+      );
 
       this.drawTrail(
         i,
@@ -485,8 +581,14 @@ class FishSwarm3 {
         distanceToCenter
       );
 
-      this.age[i] +=
-        CONFIG.fish.lifecycle.ageSpeed;
+      // Only age fish that are currently intended to remain active.
+      if (
+        this.targetLife[i] > 0
+      ) {
+        this.age[i] +=
+          CONFIG.fish.lifecycle
+            .ageSpeed;
+      }
     }
   }
 
@@ -500,6 +602,18 @@ class FishSwarm3 {
    * @param {p5.Vector} position Current world-space fish position.
    */
   drawTrail(index, position) {
+    if (
+      this.life[index] <=
+      CONFIG.fish.lifecycle
+        .visibilityThreshold
+    ) {
+      this.lastTrailPositions[
+        index
+      ] = null;
+
+      return;
+    }
+
     const projectedPosition =
       calc_xy(
         position.x,
@@ -531,7 +645,7 @@ class FishSwarm3 {
       const fishColor =
         this.colors[index];
 
-            const trailVisibility =
+      const trailVisibility =
         this.life[index];
 
       const trailRed =
@@ -650,7 +764,7 @@ class FishSwarm3 {
       CONFIG.fish.rendering.maxShaderParticles;
 
     const renderCount = min(
-      this.activeCount,
+      this.maxParticles,
       shaderParticleLimit
     );
 

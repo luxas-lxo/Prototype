@@ -1,81 +1,52 @@
-STRUCTURE,STRUCTURE_ID,STRUCTURE_NAME,ACTION,REF_AREA,Reference area,MEASURE,Measure,PLASTIC_WATER,Plastic in aquatic environments,FREQ,Frequency of observation,MISMANAGED_LITTERED_PLASTIC,Mismanaged and littered plastic,TIME_PERIOD,Time period,OBS_VALUE,Observation value,OBS_STATUS,Observation status,UNIT_MULT,Unit multiplier,UNIT_MEASURE,Unit of measure,DECIMALS,Decimals
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2000,,0.172522,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2001,,0.183328,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2002,,0.194523,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2003,,0.206099,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2004,,0.218055,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2005,,0.230388,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2006,,0.243078,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2007,,0.256148,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2008,,0.269533,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2009,,0.283209,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2010,,0.297205,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2011,,0.311485,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2012,,0.326038,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2013,,0.340848,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2014,,0.355901,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2015,,0.371185,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2016,,0.386669,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2017,,0.402348,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2018,,0.418202,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,CAN,Canada,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2019,,0.434224,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2000,,1.47905,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2001,,1.562906,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2002,,1.648965,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2003,,1.737407,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2004,,1.827926,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2005,,1.920488,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2006,,2.01511,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2007,,2.11158,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2008,,2.209696,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2009,,2.309109,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2010,,2.409952,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2011,,2.511974,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2012,,2.615021,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2013,,2.718903,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2014,,2.823467,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2015,,2.928552,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2016,,3.034087,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2017,,3.139809,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2018,,3.2455,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,USA,United States,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2019,,3.351125,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2000,,1.514796,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2001,,1.606629,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2002,,1.701187,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2003,,1.798247,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2004,,1.897919,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2005,,1.999839,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2006,,2.104144,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2007,,2.210504,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2008,,2.31852,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2009,,2.428026,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2010,,2.538965,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2011,,2.651084,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2012,,2.76422,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2013,,2.877982,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2014,,2.992317,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2015,,3.106861,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2016,,3.221475,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2017,,3.335876,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2018,,3.450031,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,EUOECD,European Union countries in OECD,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2019,,3.564014,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2000,,0.575286,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2001,,0.610658,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2002,,0.647319,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2003,,0.685235,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2004,,0.724438,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2005,,0.764861,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2006,,0.806516,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2007,,0.849427,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2008,,0.893344,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2009,,0.938225,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2010,,0.984134,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2011,,1.030995,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2012,,1.078747,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2013,,1.127374,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2014,,1.176772,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2015,,1.226845,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2016,,1.277681,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2017,,1.329101,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2018,,1.38108,,E,Estimated value,6,Millions,T,Tonnes,3,Three
-DATAFLOW,OECD.ENV.EEI:DSD_PL@DF_PL(1.0),Plastic Leakage - Estimations from 1990 to 2019,I,OECDEXEU,Non-European Union countries in OECD Europe,PL_AQ_O,Plastic Leakage to Aquatic Oceans,ACCUMULATED_STOCK_IN_OCEANS,Accumulated stock in oceans,A,Annual,_Z,Not applicable,2019,,1.433757,,E,Estimated value,6,Millions,T,Tonnes,3,Three
+year,plastic_stock_million_tonnes,region_count,plastic_stock_tonnes,plastic_normalized
+1970,,,,
+1971,,,,
+1972,,,,
+1973,,,,
+1974,,,,
+1975,,,,
+1976,,,,
+1977,,,,
+1978,,,,
+1979,,,,
+1980,,,,
+1981,,,,
+1982,,,,
+1983,,,,
+1984,,,,
+1985,,,,
+1986,,,,
+1987,,,,
+1988,,,,
+1989,,,,
+1990,,,,
+1991,,,,
+1992,,,,
+1993,,,,
+1994,,,,
+1995,,,,
+1996,,,,
+1997,,,,
+1998,,,,
+1999,,,,
+2000,3.741654,4.0,3741654.0,0.4260051098015284
+2001,3.963521,4.0,3963521.0,0.451265723342047
+2002,4.191994,4.0,4191994.0,0.47727846141234553
+2003,4.426988,4.0,4426988.0,0.504033646358014
+2004,4.668338,4.0,4668338.0,0.5315124921440217
+2005,4.915576,4.0,4915576.0,0.5596617147437357
+2006,5.168848,4.0,5168848.0,0.5884979369517893
+2007,5.427659,4.0,5427659.0,0.6179648006630901
+2008,5.691093,4.0,5691093.0,0.6479580149195275
+2009,5.958569,4.0,5958569.0,0.6784114301068412
+2010,6.230256,4.0,6230256.0,0.7093442876790935
+2011,6.5055380000000005,4.0,6505538.000000001,0.7406864531055024
+2012,6.784026,4.0,6784026.0,0.7723936368852982
+2013,7.065106999999999,4.0,7065106.999999999,0.8043960460519723
+2014,7.348457,4.0,7348457.0,0.83665679166401
+2015,7.633443,4.0,7633443.0,0.8691038036597473
+2016,7.919912,4.0,7919912.0,0.9017196622612466
+2017,8.207134,4.0,8207134.0,0.934421253495341
+2018,8.494813,4.0,8494813.0,0.9671748763537331
+2019,8.78312,4.0,8783120.0,1.0
+2020,,,,

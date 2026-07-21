@@ -12,6 +12,11 @@ const FRAMES_PER_YEAR = 250;
 let yearSpeed =
   1 / FRAMES_PER_YEAR;
 
+// Last integer year applied to the data-driven systems.
+let lastAppliedYear = -1;
+
+// Last integer dataset year applied to all visual systems.
+let lastAppliedDatasetYear = -1;
 
 // -----------------------------------------------------------------------------
 // FISH
@@ -39,6 +44,9 @@ let shaderLayer;
 // -----------------------------------------------------------------------------
 // PLANKTON
 // -----------------------------------------------------------------------------
+
+// Annual Calanus abundance dataset.
+let planktonTable;
 
 // Shader used to render the plankton particles.
 let planktonShader;
@@ -74,6 +82,9 @@ let coralDLA;
 // WATER TEMPERATURE
 // -----------------------------------------------------------------------------
 
+// Annual water-temperature dataset.
+let temperatureTable;
+
 // Animated water-temperature visualization.
 let waterTemperatureSurface;
 
@@ -81,6 +92,9 @@ let waterTemperatureSurface;
 // -----------------------------------------------------------------------------
 // POLLUTION
 // -----------------------------------------------------------------------------
+
+// Annual marine plastic-stock dataset.
+let pollutionTable;
 
 // CPU-rendered pollution patches and debris particles.
 let pollutionField;
@@ -100,6 +114,8 @@ let sceneLayer;
 // -----------------------------------------------------------------------------
 // FISHING
 // -----------------------------------------------------------------------------
+
+let fishingPressureTable;
 
 // Fishing-pressure current field affecting fish movement.
 let fishingPressureField;
@@ -143,3 +159,43 @@ const WORLD = {
   h: 220 * 2,
   d: 260 * 2
 };
+
+// -----------------------------------------------------------------------------
+// FRAME EXPORT
+// -----------------------------------------------------------------------------
+
+const FRAME_EXPORT = {
+  enabled: false,
+
+  // Frames per second of the final video.
+  frameRate: 20,
+
+  // Duration of the final video in seconds.
+  durationSeconds: 2,
+
+  // Name prefix used for exported PNG files.
+  filePrefix: "ocean-art",
+
+  // Frame at which the export was started.
+  startFrame: 0,
+
+  // Current exported frame index.
+  currentFrame: 0,
+
+  // Prevents multiple simultaneous exports.
+  active: false
+};
+
+// -----------------------------------------------------------------------------
+// CLICK EFFECTS
+// -----------------------------------------------------------------------------
+
+let clickGlowLayer;
+let clickGlowShader;
+
+let isDrawingClickGlow = false;
+let lastClickGlowPoint = null;
+
+const CLICK_GLOW_POINT_DISTANCE = 18;
+const MAX_CLICK_GLOWS = 40;
+const MAX_CLICK_FORCES = 40;

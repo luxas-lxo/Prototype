@@ -13,13 +13,29 @@ class PollutionField {
 	/**
 	 * Creates the pollution field and its off-screen graphics layers.
 	 *
+	 * @param {Object} data Normalized pollution values indexed by year.
 	 * @param {Object} options Optional simulation and rendering overrides.
 	 */
-	constructor(options = {}) {
+	constructor(data = {}, options = {}) {
 		const config = CONFIG.pollution.field;
 
-		// Configure the normalized pollution level.
-		this.pollution = constrain(options.pollution ?? config.pollution, 0, 1);
+		// Store annual normalized pollution values.
+		this.data = data;
+
+		// Store the most recently applied raw dataset value.
+		this.currentPollutionValue = 0;
+
+		// Configure the initially rendered pollution level.
+		this.pollution = constrain(
+		options.pollution ??
+			config.pollution,
+		0,
+		1
+		);
+
+		// Store the pollution level the visualization transitions toward.
+		this.targetPollution =
+		this.pollution;
 
 		// Configure the maximum number of large pollution patches.
 		this.maxPatches = max(0, floor(options.maxPatches ?? config.maxPatches));
@@ -66,6 +82,10 @@ class PollutionField {
 		this.maskLayer.pixelDensity(config.rendering.pixelDensity);
 
 		this.createInitialElements();
+
+		this.setYear(
+			CONFIG.pollution.data.startYear
+		);
 	}
 
 	/**
@@ -124,38 +144,63 @@ class PollutionField {
 		}
 
 		return {
-			position: createVector(x, y),
+			position: createVector(
+				x,
+				y
+			),
 
 			velocity: createVector(
 				random(
-					CONFIG.pollution.field.patchMovement.velocityX.min,
-
-					CONFIG.pollution.field.patchMovement.velocityX.max,
+				CONFIG.pollution.field
+					.patchMovement.velocityX.min,
+				CONFIG.pollution.field
+					.patchMovement.velocityX.max
 				),
 
 				random(
-					CONFIG.pollution.field.patchMovement.velocityY.min,
-
-					CONFIG.pollution.field.patchMovement.velocityY.max,
-				),
-			).mult(this.driftSpeed),
+				CONFIG.pollution.field
+					.patchMovement.velocityY.min,
+				CONFIG.pollution.field
+					.patchMovement.velocityY.max
+				)
+			).mult(
+				this.driftSpeed
+			),
 
 			radius,
 
 			rotation: random(TWO_PI),
 
-			rotationVelocity: random(-this.rotationSpeed, this.rotationSpeed),
+			rotationVelocity: random(
+				-this.rotationSpeed,
+				this.rotationSpeed
+			),
 
 			vertices,
 
 			intensity: random(
-				CONFIG.pollution.field.patchProperties.intensity.min,
-
-				CONFIG.pollution.field.patchProperties.intensity.max,
+				CONFIG.pollution.field
+				.patchProperties.intensity.min,
+				CONFIG.pollution.field
+				.patchProperties.intensity.max
 			),
 
-			noiseOffset: random(CONFIG.pollution.field.patchProperties.noiseOffsetMax),
-		};
+			noiseOffset: random(
+				CONFIG.pollution.field
+				.patchProperties.noiseOffsetMax
+			),
+
+			// Controls geometric appearance in the pollution mask.
+			scale:
+				CONFIG.pollution.field
+				.growth.initialScale,
+
+			targetScale:
+				CONFIG.pollution.field
+				.growth.targetScale,
+
+			isRemoving: false
+			};
 	}
 
 	/**
@@ -215,15 +260,106 @@ class PollutionField {
 	}
 
 	/**
-	 * Updates the normalized pollution level.
+	 * Updates the normalized target pollution level.
 	 *
-	 * The number of active patches and particles is adjusted during the next
-	 * update cycle.
-	 *
-	 * @param {number} value New pollution value between 0 and 1.
+	 * @param {number} value New pollution value between zero and one.
 	 */
 	setPollution(value) {
-		this.pollution = constrain(value, 0, 1);
+		this.targetPollution =
+			constrain(
+			value,
+			0,
+			1
+			);
+	}
+
+	/**
+	 * Applies the exact pollution value associated with a specific year.
+	 *
+	 * Years before the first available observation contain zero pollution.
+	 * Missing years after the dataset leave the previous target unchanged.
+	 *
+	 * @param {number} year Dataset year to apply.
+	 */
+	setYear(year) {
+		const value =
+			this.data[year];
+
+		if (!Number.isFinite(value)) {
+			return;
+		}
+
+		this.currentPollutionValue =
+			value;
+
+		this.setPollution(
+			value
+		);
+	}
+
+	/**
+	 * Gradually moves the rendered pollution level toward its yearly target.
+	 */
+	updatePollutionLevel() {
+		this.pollution = lerp(
+			this.pollution,
+			this.targetPollution,
+			CONFIG.pollution.transition
+			.interpolationSpeed
+		);
+
+		if (
+			abs(
+			this.pollution -
+			this.targetPollution
+			) < 0.0001
+		) {
+			this.pollution =
+			this.targetPollution;
+		}
+	}
+
+	/**
+	 * Updates the geometric scale of every pollution patch.
+	 *
+	 * Newly created patches grow from a point into their complete polygon shape.
+	 * Patches marked for removal shrink before being deleted.
+	 */
+	updatePatchGrowth() {
+		const growthConfig =
+			CONFIG.pollution.field.growth;
+
+		for (
+			let i =
+			this.patches.length - 1;
+			i >= 0;
+			i--
+		) {
+			const patch =
+			this.patches[i];
+
+			const interpolationSpeed =
+			patch.isRemoving
+				? growthConfig.shrinkSpeed
+				: growthConfig.growSpeed;
+
+			patch.scale = lerp(
+			patch.scale,
+			patch.targetScale,
+			interpolationSpeed
+			);
+
+			if (
+			patch.isRemoving &&
+			patch.scale <
+				growthConfig.removalThreshold
+			) {
+			this.patches.splice(
+				i,
+				1
+			);
+			}
+		}
 	}
 
 	/**
@@ -242,39 +378,131 @@ class PollutionField {
 	 * Advances the complete pollution simulation by one frame.
 	 */
 	update() {
+		this.updatePollutionLevel();
 		this.updateElementCounts();
+		this.updatePatchGrowth();
 		this.updatePatches();
 		this.updateParticles();
 	}
 
 	/**
-	 * Adjusts the active patch and particle counts to match the current
-	 * normalized pollution value.
+	 * Gradually adjusts patch and particle counts toward the current pollution
+	 * target.
 	 *
 	 * New small particles are created near existing patches whenever possible.
 	 */
 	updateElementCounts() {
-		const targetPatchCount = floor(this.maxPatches * this.pollution);
+	const targetPatchCount =
+		floor(
+		this.maxPatches *
+		this.pollution
+		);
 
-		const targetParticleCount = floor(this.maxParticles * this.pollution);
+	const targetParticleCount =
+		floor(
+		this.maxParticles *
+		this.pollution
+		);
 
-		while (this.patches.length < targetPatchCount) {
-			this.patches.push(this.createPatch());
+	const patchCountStep =
+		CONFIG.pollution.transition
+		.patchCountStep;
+
+	const particleCountStep =
+		CONFIG.pollution.transition
+		.particleCountStep;
+
+	let activePatchCount =
+		this.patches.filter(
+		patch =>
+			!patch.isRemoving
+		).length;
+
+	// Add a limited number of growing patches per frame.
+	for (
+		let i = 0;
+		i < patchCountStep &&
+		activePatchCount <
+		targetPatchCount;
+		i++
+	) {
+		this.patches.push(
+		this.createPatch()
+		);
+
+		activePatchCount++;
+	}
+
+	// Mark excessive patches for shrinking.
+	let patchesToRemove =
+		min(
+		patchCountStep,
+		max(
+			0,
+			activePatchCount -
+			targetPatchCount
+		)
+		);
+
+	for (
+		let i =
+		this.patches.length - 1;
+		i >= 0 &&
+		patchesToRemove > 0;
+		i--
+	) {
+		const patch =
+		this.patches[i];
+
+		if (patch.isRemoving) {
+		continue;
 		}
 
-		while (this.patches.length > targetPatchCount) {
-			this.patches.pop();
-		}
+		patch.isRemoving = true;
+		patch.targetScale = 0;
 
-		while (this.particles.length < targetParticleCount) {
-			const patch = this.patches.length > 0 ? random(this.patches) : null;
+		patchesToRemove--;
+	}
 
-			this.particles.push(this.createParticle(patch));
-		}
+	// Only use patches that are not currently shrinking as spawn origins.
+	const availablePatches =
+		this.patches.filter(
+		patch =>
+			!patch.isRemoving
+		);
 
-		while (this.particles.length > targetParticleCount) {
-			this.particles.pop();
-		}
+	// Add a limited number of particles per frame.
+	for (
+		let i = 0;
+		i < particleCountStep &&
+		this.particles.length <
+		targetParticleCount;
+		i++
+	) {
+		const patch =
+		availablePatches.length > 0
+			? random(
+				availablePatches
+			)
+			: null;
+
+		this.particles.push(
+		this.createParticle(
+			patch
+		)
+		);
+	}
+
+	// Remove a limited number of particles per frame.
+	for (
+		let i = 0;
+		i < particleCountStep &&
+		this.particles.length >
+		targetParticleCount;
+		i++
+	) {
+		this.particles.pop();
+	}
 	}
 
 	/**
@@ -378,7 +606,11 @@ class PollutionField {
 
 		if (isMask) {
 			const maskValue =
-				CONFIG.pollution.field.rendering.colorChannelMax * patch.intensity * this.pollution;
+				CONFIG.pollution.field
+					.rendering.colorChannelMax *
+				patch.intensity *
+				this.pollution *
+				patch.scale;
 
 			layer.fill(maskValue);
 		} else {
@@ -398,8 +630,16 @@ class PollutionField {
 		layer.noStroke();
 		layer.beginShape();
 
-		for (const vertex of patch.vertices) {
-			layer.vertex(vertex.x, vertex.y);
+		for (
+			const vertex of patch.vertices
+			) {
+			layer.vertex(
+				vertex.x *
+				patch.scale,
+
+				vertex.y *
+				patch.scale
+			);
 		}
 
 		layer.endShape(CLOSE);

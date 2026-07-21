@@ -1,36 +1,52 @@
 class ClickGlow {
-  constructor(x, y) {
-    this.pos = createVector(x, y);
+  constructor(
+    x,
+    y,
+    options = {}
+  ) {
+    this.pos =
+      createVector(
+        x,
+        y
+      );
 
-    this.radius = 5;
-    this.maxRadius = 240;
-    this.lightFactor = 0.45;
+    this.radius =
+      options.radius ?? 5;
 
-    this.alpha = 120;
+    this.maxRadius =
+      options.maxRadius ?? 80;
+
+    this.lightFactor =
+      options.lightFactor ?? 0.45;
+
+    this.alpha =
+      options.alpha ??
+      50 / 255;
   }
 
   update() {
-    this.radius += 4;
-    this.alpha *= 0.94;
-  }
+    this.radius = lerp(
+      this.radius,
+      this.maxRadius,
+      0.055
+    );
 
-  draw() {
-    noStroke();
-
-    for (let r = this.radius; r > 0; r -= 12) {
-      let a = map(r, this.radius, 0, 0, this.alpha);
-      fill(0, 120, 160, a);
-
-      ellipse(this.pos.x, this.pos.y, r * 2, r * 2);
-    }
+    this.alpha *= 0.92;
   }
 
   dead() {
-    return this.alpha < 1 || this.radius > this.maxRadius;
+    return (
+      this.alpha < 0.004 ||
+      this.radius >
+        this.maxRadius - 1
+    );
   }
 
   getLightRadius() {
-    return this.radius * this.lightFactor;
+    return (
+      this.radius *
+      this.lightFactor
+    );
   }
 }
 

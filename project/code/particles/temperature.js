@@ -9,21 +9,66 @@ class WaterTemperatureSurface {
   /**
    * Creates the temperature surface and its off-screen WEBGL layer.
    *
+   * @param {Object} data Annual water temperatures indexed by year.
    * @param {Object} options Optional visualization overrides.
    */
-  constructor(options = {}) {
+  constructor(
+    data = {},
+    options = {}
+  ) {
+    // Store annual raw temperature values.
+    this.data = data;
+
+    const validTemperatures =
+      Object.values(this.data)
+        .map(Number)
+        .filter(Number.isFinite);
+
+    // Determine the normalization range from the complete dataset.
+    this.minTemperature =
+      validTemperatures.length > 0
+        ? min(validTemperatures)
+        : 0;
+
+    this.maxTemperature =
+      validTemperatures.length > 0
+        ? max(validTemperatures)
+        : 1;
+
+    if (
+      this.maxTemperature ===
+      this.minTemperature
+    ) {
+      this.maxTemperature =
+        this.minTemperature + 1;
+    }
+
+    // Store the currently applied real temperature value.
+    this.currentTemperatureC =
+      this.data[
+        CONFIG.temperature.data
+          .startYear
+      ] ??
+      this.minTemperature;
+
     // Configure the initial normalized temperature value.
     this.temperature = constrain(
       options.temperature ??
-        CONFIG.temperature.initialState.temperature,
+        CONFIG.temperature.initialState
+          .temperature,
       0,
       1
     );
 
+    // Store the normalized value the surface transitions toward.
+    this.targetTemperature =
+      this.temperature;
+
     // Configure the overall visibility of the temperature layer.
     this.opacity = constrain(
       options.opacity ??
-        CONFIG.temperature.initialState.opacity,
+        CONFIG.temperature.initialState
+          .opacity,
       0,
       1
     );
@@ -32,21 +77,25 @@ class WaterTemperatureSurface {
     this.speed = max(
       0,
       options.speed ??
-        CONFIG.temperature.initialState.speed
+        CONFIG.temperature.initialState
+          .speed
     );
 
     // Convert the configured hexadecimal colors into normalized shader RGB.
-    this.coldColor = this.colorToShaderRGB(
-      CONFIG.temperature.colors.cold
-    );
+    this.coldColor =
+      this.colorToShaderRGB(
+        CONFIG.temperature.colors.cold
+      );
 
-    this.neutralColor = this.colorToShaderRGB(
-      CONFIG.temperature.colors.neutral
-    );
+    this.neutralColor =
+      this.colorToShaderRGB(
+        CONFIG.temperature.colors.neutral
+      );
 
-    this.warmColor = this.colorToShaderRGB(
-      CONFIG.temperature.colors.warm
-    );
+    this.warmColor =
+      this.colorToShaderRGB(
+        CONFIG.temperature.colors.warm
+      );
 
     // Create the off-screen WEBGL layer used to run the temperature shader.
     this.layer = createGraphics(
@@ -56,14 +105,26 @@ class WaterTemperatureSurface {
     );
 
     this.layer.pixelDensity(
-      CONFIG.temperature.rendering.pixelDensity
+      CONFIG.temperature.rendering
+        .pixelDensity
     );
 
     // Compile the temperature shader for the off-screen layer.
-    this.shader = this.layer.createShader(
-      waterTemperatureVert,
-      waterTemperatureFrag
+    this.shader =
+      this.layer.createShader(
+        waterTemperatureVert,
+        waterTemperatureFrag
+      );
+
+    // Apply the first available dataset year.
+    this.setYear(
+      CONFIG.temperature.data
+        .startYear
     );
+
+    // Start directly at the first target value.
+    this.temperature =
+      this.targetTemperature;
   }
 
   /**
@@ -84,18 +145,76 @@ class WaterTemperatureSurface {
   }
 
   /**
-   * Updates the normalized water-temperature value.
-   *
-   * A value of 0 represents the cold end of the color range, while a value
-   * of 1 represents the warm end.
+   * Updates the normalized target water-temperature value.
    *
    * @param {number} value New normalized temperature value.
    */
   setTemperature(value) {
-    this.temperature = constrain(
-      value,
-      0,
-      1
+    this.targetTemperature =
+      constrain(
+        value,
+        0,
+        1
+      );
+  }
+
+  /**
+   * Applies the raw water temperature associated with a specific year.
+   *
+   * @param {number} year Dataset year to apply.
+   */
+  setYear(year) {
+    const value =
+      Number(
+        this.data[year]
+      );
+
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    this.currentTemperatureC =
+      value;
+
+    this.setFromTemperature(
+      value
+    );
+  }
+
+  /**
+   * Normalizes and visually scales a raw temperature value.
+   *
+   * @param {number} value Raw water temperature in degrees Celsius.
+   */
+  setFromTemperature(value) {
+    const normalizedTemperature =
+      constrain(
+        map(
+          value,
+          this.minTemperature,
+          this.maxTemperature,
+          0,
+          1
+        ),
+        0,
+        1
+      );
+
+    const centeredTemperature =
+      normalizedTemperature - 0.5;
+
+    const visuallyScaledTemperature =
+      0.5 +
+      centeredTemperature *
+      CONFIG.temperature.data
+        .visualContrast;
+
+    this.setTemperature(
+      constrain(
+        visuallyScaledTemperature,
+        0,
+        1
+      )
     );
   }
 
@@ -143,10 +262,34 @@ class WaterTemperatureSurface {
   }
 
   /**
+   * Gradually moves the rendered temperature toward the yearly target value.
+   */
+  updateTemperature() {
+    this.temperature = lerp(
+      this.temperature,
+      this.targetTemperature,
+      CONFIG.temperature.transition
+        .interpolationSpeed
+    );
+
+    if (
+      abs(
+        this.temperature -
+        this.targetTemperature
+      ) < 0.0001
+    ) {
+      this.temperature =
+        this.targetTemperature;
+    }
+  }
+
+  /**
    * Renders the animated temperature shader and draws its result to the
    * main canvas.
    */
   draw() {
+    this.updateTemperature();
+    
     this.layer.push();
     this.layer.clear();
     this.layer.blendMode(BLEND);

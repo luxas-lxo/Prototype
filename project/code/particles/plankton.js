@@ -12,14 +12,29 @@ class PlanktonGroup3D {
    * @param {number} cx Initial world-space x-coordinate.
    * @param {number} cy Initial world-space y-coordinate.
    * @param {number} cz Initial world-space z-coordinate.
+   * @param {Object} data Normalized plankton abundance values indexed by year.
    * @param {Object} options Optional per-group configuration overrides.
    */
-  constructor(cx, cy, cz, options = {}) {
-    this.pos = createVector(cx, cy, cz);
+  constructor(
+    cx,
+    cy,
+    cz,
+    data = {},
+    options = {}
+  ) {
+    this.pos = createVector(
+      cx,
+      cy,
+      cz
+    );
+
+    // Store yearly plankton abundance values.
+    this.data = data;
 
     // Keep the particle pool compatible with the fixed GLSL array capacity.
     const shaderParticleLimit =
-      CONFIG.plankton.rendering.maxShaderParticles;
+      CONFIG.plankton.rendering
+        .maxShaderParticles;
 
     this.maxParticles = constrain(
       floor(
@@ -30,30 +45,57 @@ class PlanktonGroup3D {
       shaderParticleLimit
     );
 
-    this.activeCount = constrain(
+    // Define the minimum visible population for the lowest data value.
+    this.minParticles = constrain(
       floor(
-        options.count ??
-          CONFIG.plankton.rendering.activeCount
+        options.minParticles ??
+          CONFIG.plankton.population
+            .minParticles
       ),
       0,
       this.maxParticles
+    );
+
+    // Define the highest visible population controlled by abundance data.
+    this.populationMax = constrain(
+      floor(
+        options.maxVisibleParticles ??
+          CONFIG.plankton.population
+            .maxParticles
+      ),
+      this.minParticles,
+      this.maxParticles
+    );
+
+    // Define the initial target population before yearly data is applied.
+    this.targetCount = constrain(
+      floor(
+        options.count ??
+          CONFIG.plankton.rendering
+            .activeCount
+      ),
+      this.minParticles,
+      this.populationMax
     );
 
     // Define the three-dimensional area used for the initial distribution.
     this.spreadX =
       options.spreadX ??
       WORLD.w *
-        CONFIG.plankton.distribution.worldSpreadFactor;
+        CONFIG.plankton.distribution
+          .worldSpreadFactor;
 
     this.spreadY =
       options.spreadY ??
       WORLD.h *
-        CONFIG.plankton.distribution.worldSpreadFactor;
+        CONFIG.plankton.distribution
+          .worldSpreadFactor;
 
     this.spreadZ =
       options.spreadZ ??
       WORLD.d *
-        CONFIG.plankton.distribution.worldSpreadFactor;
+        CONFIG.plankton.distribution
+          .worldSpreadFactor;
 
     // Define particle appearance and movement settings.
     this.minSize =
@@ -74,13 +116,22 @@ class PlanktonGroup3D {
 
     this.noiseStrength = max(
       options.noiseStrength ??
-        CONFIG.plankton.movement.noiseStrength,
+        CONFIG.plankton.movement
+          .noiseStrength,
       0
     );
 
     this.fadeInSpeed = max(
       options.fadeInSpeed ??
-        CONFIG.plankton.lifecycle.fadeInSpeed,
+        CONFIG.plankton.lifecycle
+          .fadeInSpeed,
+      0
+    );
+
+    this.fadeOutSpeed = max(
+      options.fadeOutSpeed ??
+        CONFIG.plankton.lifecycle
+          .fadeOutSpeed,
       0
     );
 
@@ -90,9 +141,24 @@ class PlanktonGroup3D {
     this.sizes = [];
     this.colors = [];
     this.life = [];
+    this.targetLife = [];
     this.noiseOffsets = [];
     this.phases = [];
     this.seeds = [];
+
+    // Create a randomized activation order so particles fade in and out
+    // across the full spatial distribution instead of following array order.
+    this.activationOrder =
+      shuffle(
+        Array.from(
+          {
+            length:
+              this.maxParticles
+          },
+          (_, index) =>
+            index
+        )
+      );
 
     // Create the complete particle pool once.
     for (
@@ -125,7 +191,8 @@ class PlanktonGroup3D {
       this.velocities.push(
         p5.Vector.random3D().mult(
           random(
-            CONFIG.plankton.movement.initialSpeedMin,
+            CONFIG.plankton.movement
+              .initialSpeedMin,
             this.maxSpeed
           )
         )
@@ -141,18 +208,36 @@ class PlanktonGroup3D {
       this.colors.push(
         color(
           random(
-            CONFIG.plankton.rendering.colors
+            CONFIG.plankton.rendering
+              .colors
           )
         )
       );
 
+      const initialVisibility =
+        CONFIG.plankton.lifecycle
+          .initialLife;
+
       this.life.push(
-        CONFIG.plankton.lifecycle.initialLife
+        initialVisibility
+      );
+
+      this.targetLife.push(0);
+
+      this.life.push(
+        initialVisibility
+      );
+
+      this.targetLife.push(
+        initialVisibility > 0
+          ? 1
+          : 0
       );
 
       this.noiseOffsets.push(
         random(
-          CONFIG.plankton.movement.noiseOffsetMax
+          CONFIG.plankton.movement
+            .noiseOffsetMax
         )
       );
 
@@ -162,22 +247,144 @@ class PlanktonGroup3D {
 
       this.seeds.push(
         random(
-          CONFIG.plankton.shaderStyle.seedMax
+          CONFIG.plankton.shaderStyle
+            .seedMax
         )
       );
+    }
+
+    // Synchronize target visibility with the initial particle count.
+    this.updateTargetVisibility();
+  }
+
+  /**
+   * Applies the normalized plankton abundance associated with a specific year.
+   *
+   * @param {number} year Dataset year to apply.
+   */
+  setYear(year) {
+    const abundance =
+      Number(this.data[year]);
+
+    if (!Number.isFinite(abundance)) {
+      return;
+    }
+
+    this.setFromAbundance(
+      abundance
+    );
+  }
+
+  /**
+   * Maps normalized Calanus abundance to the visible particle population.
+   *
+   * @param {number} abundance Normalized abundance value between zero and one.
+   */
+  setFromAbundance(abundance) {
+    const normalizedAbundance =
+      constrain(
+        abundance,
+        0,
+        1
+      );
+
+    this.targetCount = floor(
+      lerp(
+        this.minParticles,
+        this.populationMax,
+        normalizedAbundance
+      )
+    );
+
+    this.updateTargetVisibility();
+  }
+
+  /**
+   * Assigns target visibility according to the current target population.
+   */
+  updateTargetVisibility() {
+    for (
+      let orderIndex = 0;
+      orderIndex < this.maxParticles;
+      orderIndex++
+    ) {
+      const particleIndex =
+        this.activationOrder[
+          orderIndex
+        ];
+
+      this.targetLife[
+        particleIndex
+      ] =
+        orderIndex <
+        this.targetCount
+          ? CONFIG.plankton.lifecycle
+              .maxLife
+          : 0;
     }
   }
 
   /**
-   * Advances every active plankton particle by one simulation frame.
+   * Gradually moves every particle toward its target visibility.
    */
-  update() {
+  updateVisibility() {
     for (
       let i = 0;
-      i < this.activeCount;
+      i < this.maxParticles;
       i++
     ) {
-      this.updateParticle(i);
+      const isFadingIn =
+        this.targetLife[i] >
+        this.life[i];
+
+      const fadeSpeed =
+        isFadingIn
+          ? this.fadeInSpeed
+          : this.fadeOutSpeed;
+
+      this.life[i] = lerp(
+        this.life[i],
+        this.targetLife[i],
+        fadeSpeed
+      );
+
+      if (
+        abs(
+          this.life[i] -
+          this.targetLife[i]
+        ) < 0.001
+      ) {
+        this.life[i] =
+          this.targetLife[i];
+      }
+    }
+  }
+
+  /**
+   * Advances the complete plankton particle pool by one simulation frame.
+   *
+   * All particles remain in the simulation so they can fade in and out without
+   * suddenly appearing or disappearing.
+   */
+  update() {
+    this.updateVisibility();
+
+    const visibilityThreshold =
+      CONFIG.plankton.population
+        .visibilityThreshold;
+
+    for (
+      let i = 0;
+      i < this.maxParticles;
+      i++
+    ) {
+      if (
+        this.life[i] >
+          visibilityThreshold ||
+        this.targetLife[i] > 0
+      ) {
+        this.updateParticle(i);
+      }
     }
   }
 
@@ -225,12 +432,6 @@ class PlanktonGroup3D {
     velocity.add(noiseForce);
     velocity.limit(this.maxSpeed);
     position.add(velocity);
-
-    this.life[index] = min(
-      this.life[index] +
-        this.fadeInSpeed,
-      CONFIG.plankton.lifecycle.maxLife
-    );
 
     this.keepParticleInside(index);
   }
@@ -327,7 +528,6 @@ class PlanktonGroup3D {
       CONFIG.plankton.rendering.maxShaderParticles;
 
     const renderCount = min(
-      this.activeCount,
       this.maxParticles,
       shaderParticleLimit
     );

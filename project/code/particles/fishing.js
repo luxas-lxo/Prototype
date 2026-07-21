@@ -14,9 +14,14 @@ class FishingPressureField {
    *
    * @param {Object} options Optional simulation overrides.
    */
-  constructor(options = {}) {
+  constructor(
+    data = {},
+    options = {}
+  ) {
     const config =
       CONFIG.fishingPressure;
+
+    this.data = data;
 
     // Configure the normalized fishing-pressure intensity.
     this.pressure = constrain(
@@ -25,6 +30,9 @@ class FishingPressureField {
       0,
       1
     );
+
+    this.targetPressure =
+      this.pressure;
 
     // Configure pulse spawning and capacity.
     this.maxPulseCount =
@@ -49,10 +57,9 @@ class FishingPressureField {
 
   /**
    * Updates the fishing-pressure field.
-   *
-   * This spawns new pulses when allowed and advances all active pulses.
    */
   update() {
+    this.updatePressure();
     this.trySpawnPulse();
     this.updatePulses();
   }
@@ -111,32 +118,67 @@ class FishingPressureField {
         )
       ).normalize();
 
+    const pulseLength =
+      WORLD.w *
+      random(
+        config.volume
+          .lengthMultiplier.min,
+        config.volume
+          .lengthMultiplier.max
+      );
+
+    const pulseWidth =
+      WORLD.h *
+      random(
+        config.volume
+          .widthMultiplier.min,
+        config.volume
+          .widthMultiplier.max
+      );
+
+    const pulseHeight =
+      WORLD.d *
+      random(
+        config.volume
+          .heightMultiplier.min,
+        config.volume
+          .heightMultiplier.max
+      );
+
+    const halfLength =
+      pulseLength * 0.5;
+
     const spawnOffset =
       config.spawning.spawnOffset;
 
-    const center = createVector(
-      directionSign > 0
-        ? -WORLD.w / 2 - spawnOffset
-        : WORLD.w / 2 + spawnOffset,
+    const center =
+      createVector(
+        directionSign > 0
+          ? -WORLD.w / 2 -
+            spawnOffset +
+            halfLength
+          : WORLD.w / 2 +
+            spawnOffset -
+            halfLength,
 
-      random(
-        -WORLD.h *
-          config.spawning
-            .yRangeMultiplier,
-        WORLD.h *
-          config.spawning
-            .yRangeMultiplier
-      ),
+        random(
+          -WORLD.h *
+            config.spawning
+              .yRangeMultiplier,
+          WORLD.h *
+            config.spawning
+              .yRangeMultiplier
+        ),
 
-      random(
-        -WORLD.d *
-          config.spawning
-            .zRangeMultiplier,
-        WORLD.d *
-          config.spawning
-            .zRangeMultiplier
-      )
-    );
+        random(
+          -WORLD.d *
+            config.spawning
+              .zRangeMultiplier,
+          WORLD.d *
+            config.spawning
+              .zRangeMultiplier
+        )
+      );
 
     const velocity =
       direction.copy().mult(
@@ -148,12 +190,58 @@ class FishingPressureField {
         )
       );
 
-    const duration = floor(
-      random(
-        this.minDuration,
-        this.maxDuration
-      )
-    );
+    const duration =
+      floor(
+        random(
+          this.minDuration,
+          this.maxDuration
+        )
+      );
+    
+    const visualConfig =
+      config.visual;
+
+    const visualLineCount =
+      floor(
+        lerp(
+          visualConfig.lineCount.min,
+          visualConfig.lineCount.max + 1,
+          this.pressure
+        )
+      );
+
+    const visualLineCenters =
+      Array.from(
+        {
+          length:
+            visualLineCount
+        },
+        () => ({
+          lateral:
+            random(
+              -config.visual
+                .centerOffset.lateral,
+              config.visual
+                .centerOffset.lateral
+            ),
+
+          vertical:
+            random(
+              -config.visual
+                .centerOffset.vertical,
+              config.visual
+                .centerOffset.vertical
+            ),
+
+          longitudinal:
+            random(
+              -config.visual
+                .centerOffset.longitudinal,
+              config.visual
+                .centerOffset.longitudinal
+            )
+        })
+      );
 
     return {
       center,
@@ -161,38 +249,24 @@ class FishingPressureField {
       velocity,
 
       length:
-        WORLD.w *
-        random(
-          config.volume
-            .lengthMultiplier.min,
-          config.volume
-            .lengthMultiplier.max
-        ),
+        pulseLength,
 
       width:
-        WORLD.h *
-        random(
-          config.volume
-            .widthMultiplier.min,
-          config.volume
-            .widthMultiplier.max
-        ),
+        pulseWidth,
 
       height:
-        WORLD.d *
-        random(
-          config.volume
-            .heightMultiplier.min,
-          config.volume
-            .heightMultiplier.max
-        ),
+        pulseHeight,
 
-      strength: random(
-        config.motion
-          .strength.min,
-        config.motion
-          .strength.max
-      ),
+      strength:
+        random(
+          config.motion.strength.min,
+          config.motion.strength.max
+        ) *
+        lerp(
+          0.35,
+          1.0,
+          this.pressure
+        ),
 
       turbulenceStrength:
         config.motion
@@ -201,7 +275,37 @@ class FishingPressureField {
       age: 0,
       duration,
 
-      noiseOffset: random(10000)
+      noiseOffset:
+        random(10000),
+
+      visual: {
+        lineCount:
+          visualLineCount,
+
+        noiseOffset:
+          random(10000),
+
+        phaseOffset:
+          random(TWO_PI),
+
+        colorIndices:
+          Array.from(
+            {
+              length:
+                visualLineCount
+            },
+            () =>
+              floor(
+                random(
+                  config.visual
+                    .colors.length
+                )
+              )
+          ),
+
+        lineCenters:
+          visualLineCenters
+      }
     };
   }
 
@@ -500,16 +604,59 @@ class FishingPressureField {
   }
 
   /**
-   * Updates the normalized fishing-pressure intensity.
+   * Updates the target normalized fishing-pressure intensity.
    *
-   * @param {number} value New pressure value between 0 and 1.
+   * @param {number} value New target pressure between zero and one.
    */
   setPressure(value) {
-    this.pressure = constrain(
-      value,
-      0,
-      1
+    this.targetPressure =
+      constrain(
+        value,
+        0,
+        1
+      );
+  }
+
+  /**
+   * Applies the normalized fishing-pressure value associated with a year.
+   *
+   * @param {number} year Dataset year to apply.
+   */
+  setYear(year) {
+    const value =
+      this.data[year];
+
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    this.setPressure(
+      value
     );
+  }
+
+  /**
+   * Smoothly moves the rendered pressure toward the current yearly target.
+   */
+  updatePressure() {
+    this.pressure =
+      lerp(
+        this.pressure,
+        this.targetPressure,
+        CONFIG.fishingPressure
+          .transition
+          .interpolationSpeed
+      );
+
+    if (
+      abs(
+        this.pressure -
+        this.targetPressure
+      ) < 0.0001
+    ) {
+      this.pressure =
+        this.targetPressure;
+    }
   }
 
   /**
@@ -714,5 +861,377 @@ class FishingPressureField {
     }
 
     pop();
+  }
+
+  /**
+   * Draws animated projected flow lines for all active fishing-pressure pulses.
+   */
+  drawVisuals() {
+    if (
+      !CONFIG.fishingPressure
+        .visual.enabled
+    ) {
+      return;
+    }
+
+    push();
+
+    noFill();
+    blendMode(ADD);
+
+    for (
+      const pulse of this.pulses
+    ) {
+      this.drawPulseFlowLines(
+        pulse
+      );
+    }
+
+    pop();
+  }
+
+  /**
+   * Draws several curved flow lines through one fishing-pressure pulse.
+   *
+   * @param {Object} pulse Fishing-pressure pulse to render.
+   */
+  drawPulseFlowLines(pulse) {
+    const config =
+      CONFIG.fishingPressure.visual;
+
+    const forward =
+      pulse.direction.copy().normalize();
+
+    const referenceUp =
+      abs(forward.y) > 0.95
+        ? createVector(0, 0, 1)
+        : createVector(0, 1, 0);
+
+    const side =
+      forward
+        .copy()
+        .cross(referenceUp)
+        .normalize();
+
+    const localUp =
+      side
+        .copy()
+        .cross(forward)
+        .normalize();
+
+    const visibleLength =
+      pulse.length *
+      config.lengthMultiplier;
+
+    const halfLength =
+      visibleLength * 0.5;
+
+    const spread =
+      WORLD.h *
+      config.spreadMultiplier;
+
+    const pulseVisibility =
+      this.getPulseVisibility(
+        pulse
+      );
+
+    const pressureFactor =
+      lerp(
+        0.6,
+        1.0,
+        this.pressure
+      );
+
+    for (
+      let lineIndex = 0;
+      lineIndex <
+        pulse.visual.lineCount;
+      lineIndex++
+    ) {
+      const normalizedLineIndex =
+        pulse.visual.lineCount <= 1
+          ? 0.5
+          : lineIndex /
+            (
+              pulse.visual.lineCount -
+              1
+            );
+
+      const lateralOffset =
+        lerp(
+          -spread,
+          spread,
+          normalizedLineIndex
+        );
+
+      const individualOffset =
+        map(
+          noise(
+            pulse.visual.noiseOffset +
+              lineIndex * 4.7
+          ),
+          0,
+          1,
+          -spread * 0.22,
+          spread * 0.22
+        );
+
+      const lineAlpha =
+        lerp(
+          config.opacity.min,
+          config.opacity.max,
+          noise(
+            pulse.visual.noiseOffset +
+              lineIndex * 13.7
+          )
+        ) *
+        pulseVisibility *
+        pressureFactor;
+
+      const lineWeight =
+        lerp(
+          config.strokeWeight.min,
+          config.strokeWeight.max,
+          noise(
+            pulse.visual.noiseOffset +
+              lineIndex * 5.2
+          )
+        );
+
+      const colorIndex =
+        lineIndex %
+        config.colors.length;
+
+      const lineColor =
+        color(
+          config.colors[
+            colorIndex
+          ]
+        );
+
+      lineColor.setAlpha(
+        lineAlpha
+      );
+
+      const centerOffset =
+        pulse.visual.lineCenters[
+          lineIndex
+        ];
+
+      stroke(
+        lineColor
+      );
+
+      strokeWeight(
+        lineWeight
+      );
+
+      beginShape();
+
+      for (
+        let pointIndex = 0;
+        pointIndex <
+          config.pointCount;
+        pointIndex++
+      ) {
+        const progress =
+          pointIndex /
+          (
+            config.pointCount -
+            1
+          );
+
+        const alongDistance =
+          lerp(
+            -halfLength,
+            halfLength,
+            progress
+          );
+
+        const edgeFade =
+          sin(
+            progress *
+            PI
+          );
+
+        const noiseValue =
+          noise(
+            pulse.visual.noiseOffset +
+              lineIndex * 0.7,
+
+            progress *
+              config.noise.spatialScale *
+              100,
+
+            frameCount *
+              config.noise
+                .timeSpeed
+          );
+
+        const signedNoise =
+          map(
+            noiseValue,
+            0,
+            1,
+            -1,
+            1
+          );
+
+        const wave =
+          sin(
+            progress *
+              TWO_PI *
+              config.noise.waveCount +
+            pulse.visual.phaseOffset +
+            frameCount *
+              config.noise.timeSpeed *
+              4 +
+            lineIndex * 0.8
+          );
+
+        const secondaryWave =
+          sin(
+            progress *
+              TWO_PI *
+              (
+                config.noise.waveCount *
+                0.45
+              ) -
+            pulse.visual.phaseOffset *
+              0.6 +
+            frameCount *
+              config.noise.timeSpeed *
+              2
+          );
+
+        const displacement =
+          (
+            signedNoise *
+              config.noise.noiseWeight +
+            wave *
+              config.noise.waveWeight +
+            secondaryWave *
+              0.2
+          ) *
+          config.noise.displacement *
+          edgeFade;
+
+        const point3D =
+          pulse.center.copy();
+
+        point3D.add(
+          forward
+            .copy()
+            .mult(
+              centerOffset
+                .longitudinal
+            )
+        );
+
+        point3D.add(
+          side
+            .copy()
+            .mult(
+              centerOffset
+                .lateral
+            )
+        );
+
+        point3D.add(
+          localUp
+            .copy()
+            .mult(
+              centerOffset
+                .vertical
+            )
+        );
+
+        point3D.add(
+          forward
+            .copy()
+            .mult(
+              alongDistance
+            )
+        );
+
+        point3D.add(
+          side
+            .copy()
+            .mult(
+              lateralOffset +
+              individualOffset +
+              displacement
+            )
+        );
+
+        point3D.add(
+          localUp
+            .copy()
+            .mult(
+              displacement *
+              0.22
+            )
+        );
+
+        const point2D =
+          calc_xy(
+            point3D.x,
+            point3D.y,
+            point3D.z
+          );
+
+        curveVertex(
+          point2D.x,
+          point2D.y
+        );
+      }
+
+      endShape();
+    }
+  }
+
+  /**
+   * Returns a visibility factor for a pulse based on its lifetime.
+   *
+   * Newly spawned pulses fade in during the first frames. Near the end of their
+   * lifetime they fade out again before being removed.
+   *
+   * @param {Object} pulse Fishing-pressure pulse.
+   * @returns {number} Visibility factor between 0 and 1.
+   */
+  getPulseVisibility(pulse) {
+    const fadeConfig =
+      CONFIG.fishingPressure.visual.fade;
+
+    const fadeInFrames =
+      max(1, fadeConfig.inFrames);
+
+    const fadeOutFrames =
+      max(1, fadeConfig.outFrames);
+
+    const fadeInFactor =
+      constrain(
+        pulse.age / fadeInFrames,
+        0,
+        1
+      );
+
+    const remainingFrames =
+      max(
+        0,
+        pulse.duration - pulse.age
+      );
+
+    const fadeOutFactor =
+      constrain(
+        remainingFrames / fadeOutFrames,
+        0,
+        1
+      );
+
+    return min(
+      fadeInFactor,
+      fadeOutFactor
+    );
   }
 }
