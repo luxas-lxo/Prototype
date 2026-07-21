@@ -195,10 +195,15 @@ const CONFIG = {
       }
     },
 
-    // Controls interactions between fish and user input
+    // Controls interactions between fish and user/world input
     interaction: {
-      // Multiplier applied to click-based repulsion forces
-      clickForceMultiplier: 0.08
+      // Existing click interaction
+      clickForceMultiplier: 0.08,
+
+      // Controls how strongly fishing-current pulses affect individual fish
+      fishing: {
+        forceMultiplier: 1.0
+      }
     },
 
     // Controls the boundaries used by the swarm center
@@ -310,13 +315,13 @@ const CONFIG = {
     // Controls the number and growth rate of coral colonies
     growth: {
       // Number of independent coral colonies
-      seedCount: 5,
+      seedCount: 2,
 
       // Maximum number of nodes across all colonies
-      maxNodes: 4000,
+      maxNodes: 1500,
 
       // Number of random walkers simulated per frame
-      walkersPerFrame: 6,
+      walkersPerFrame: 4,
 
       // Maximum number of movement steps performed by each walker
       stepsPerWalker: 200
@@ -423,13 +428,21 @@ const CONFIG = {
     // Controls coral colors
     rendering: {
       // Available base colors assigned randomly to coral colonies
-      colors: [
+      colors_: [
         "#5500ED",
         "#0900ED",
         "#A500ED",
         "#0042ED",
         "#ED00E4",
         "#B66CFF"
+      ],
+
+      colors: [
+        "#0042D6",
+        "#0084D6",
+        "#3430fc",
+        "#00C7D6",
+        "#4A00D6"
       ],
 
       // Debug-render brightness range based on depth
@@ -440,8 +453,8 @@ const CONFIG = {
 
       // Debug-render alpha range based on depth
       depthAlpha: {
-        near: 220,
-        far: 85
+        near: 260,
+        far: 150
       }
     },
 
@@ -462,7 +475,7 @@ const CONFIG = {
       temperature: 0.5,
 
       // Overall opacity of the temperature layer
-      opacity: 0.25,
+      opacity: 0.7,
 
       // Animation speed multiplier
       speed: 0.5
@@ -728,6 +741,81 @@ const CONFIG = {
         rendering: {
         pixelDensity: 1
         }
+    },
+
+    // Controls how strongly the pollution mask removes color from the scene
+    postProcess: {
+      desaturationStrength: 0.7
+}
+  },
+
+  fishingPressure: {
+    // Controls the global intensity of fishing-pressure activity
+    state: {
+      pressure: 1.0
+    },
+
+    // Controls how many current pulses may exist at the same time
+    pulses: {
+      maxCount: 1,
+      spawnChancePerFrame: 0.005,
+
+      duration: {
+        min: 1000,
+        max: 2000
+      }
+    },
+
+    // Controls the three-dimensional size of each current band
+    volume: {
+      lengthMultiplier: {
+        min: 1.5,
+        max: 1.5
+      },
+
+      widthMultiplier: {
+        min: 5.0,
+        max: 5.0
+      },
+
+      heightMultiplier: {
+        min: 0.08,
+        max: 0.15
+      }
+    },
+
+    // Controls the horizontal movement and slight vertical/depth drift
+    direction: {
+      verticalDrift: 0.24,
+      depthDrift: 0.08
+    },
+
+    // Controls the movement and strength of each pulse
+    motion: {
+      travelSpeed: {
+        min: 3.8,
+        max: 5.8
+      },
+
+      strength: {
+        min: 0.15,
+        max: 1.5
+      },
+
+      turbulenceStrength: 0.18,
+      noiseTimeSpeed: 0.01
+    },
+
+    // Controls where new pulses enter the simulated world
+    spawning: {
+      spawnOffset: 120,
+      yRangeMultiplier: 0.22,
+      zRangeMultiplier: 0.18
+    },
+
+    // Controls optional debug rendering
+    debug: {
+      draw: false
     }
   }
 };

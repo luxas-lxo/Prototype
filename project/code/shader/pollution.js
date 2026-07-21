@@ -503,3 +503,128 @@ void main() {
     );
 }
 `;
+
+const pollutionPostVert = `
+precision mediump float;
+
+attribute vec3 aPosition;
+attribute vec2 aTexCoord;
+
+varying vec2 vTexCoord;
+
+void main() {
+  vTexCoord = vec2(
+    aTexCoord.x,
+    1.0 - aTexCoord.y
+  );
+
+  vec4 position =
+    vec4(aPosition, 1.0);
+
+  position.xy =
+    position.xy * 2.0 - 1.0;
+
+  gl_Position =
+    position;
+}
+`;
+
+const pollutionPostFrag = `
+precision mediump float;
+
+uniform sampler2D u_scene;
+uniform sampler2D u_pollutionMask;
+uniform float u_strength;
+
+varying vec2 vTexCoord;
+
+void main() {
+  vec2 sceneUv =
+    vTexCoord;
+
+  vec2 maskUv = vec2(
+    vTexCoord.x,
+    1.0 - vTexCoord.y
+  );
+
+  // Read the already rendered scene.
+  vec4 sceneColor =
+  texture2D(
+    u_scene,
+    sceneUv
+  );
+
+float pollutionSample =
+  texture2D(
+    u_pollutionMask,
+    maskUv
+  ).r;
+
+float pollutionAmount =
+  clamp(
+    pollutionSample *
+    2.0 *
+    u_strength,
+    0.0,
+    1.0
+  );
+
+// Background color defined by background(3, 8, 14).
+vec3 backgroundColor =
+  vec3(
+    3.0 / 255.0,
+    8.0 / 255.0,
+    14.0 / 255.0
+  );
+
+// Protect the base background while preserving foreground elements.
+float backgroundDifference =
+  distance(
+    sceneColor.rgb,
+    backgroundColor
+  );
+
+float foregroundAmount =
+  smoothstep(
+    0.015,
+    0.08,
+    backgroundDifference
+  );
+
+pollutionAmount *=
+  foregroundAmount;
+
+float luminance =
+  dot(
+    sceneColor.rgb,
+    vec3(
+      0.299,
+      0.587,
+      0.114
+    )
+  );
+
+float pollutedLuminance =
+  mix(
+    luminance,
+    0.58,
+    0.3
+  );
+
+vec3 grayscaleColor =
+  vec3(pollutedLuminance);
+
+vec3 finalColor =
+  mix(
+    sceneColor.rgb,
+    grayscaleColor,
+    pollutionAmount
+  );
+
+gl_FragColor =
+  vec4(
+    finalColor,
+    sceneColor.a
+  );
+}
+`;

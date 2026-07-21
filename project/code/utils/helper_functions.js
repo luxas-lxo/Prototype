@@ -326,7 +326,7 @@ function initializeCoralSystem() {
  * Updates the coral growth while it is active and always renders the
  * existing coral structure.
  */
-function drawCoralSystem() {
+function drawCoralSystem_() {
   // Stop generating new nodes after the coral reaches its limit.
   if (!coralDLA.finished) {
     coralDLA.update();
@@ -348,12 +348,35 @@ function drawCoralSystem() {
   );
 }
 
+function drawCoralSystem() {
+  if (!coralDLA.finished) {
+    coralDLA.update();
+  }
+
+  drawCoralLines(coralDLA);
+  drawCoralGlow();
+
+  // Draw the diffuse watercolor wash first.
+  image(
+    coralGlowLayer,
+    0,
+    0
+  );
+
+  // Draw the more defined coral branches above the wash.
+  image(
+    coralLineLayer,
+    0,
+    0
+  );
+}
+
 /**
  * Renders all coral segments into the visible line layer and the glow mask.
  *
  * @param {CoralDLA2D} coral Coral simulation to render.
  */
-function drawCoralLines(coral) {
+function drawCoralLines_(coral) {
   const segments =
     coral.getSegments();
 
@@ -470,9 +493,172 @@ function drawCoralLines(coral) {
 }
 
 /**
+ * Renders coral branches as soft layered pigment strokes.
+ *
+ * The result avoids a neon appearance by using lower alpha values,
+ * less saturated colors, and no bright white outline.
+ *
+ * @param {CoralDLA2D} coral Coral simulation to render.
+ */
+function drawCoralLines(coral) {
+  const segments =
+    coral.getSegments();
+
+  coralLineLayer.clear();
+  coralGlowMaskLayer.clear();
+
+  coralLineLayer.strokeCap(ROUND);
+  coralLineLayer.strokeJoin(ROUND);
+
+  coralGlowMaskLayer.strokeCap(ROUND);
+  coralGlowMaskLayer.strokeJoin(ROUND);
+
+  for (const segment of segments) {
+    const segmentColor =
+      segment.color;
+
+    const visibility =
+      segment.visibility;
+
+    const depthBrightness =
+      lerp(
+        0.92,
+        0.62,
+        segment.depth
+      );
+
+    const depthAlpha =
+      lerp(
+        0.95,
+        0.45,
+        segment.depth
+      );
+
+    let redValue =
+      red(segmentColor) *
+      depthBrightness;
+
+    let greenValue =
+      green(segmentColor) *
+      depthBrightness;
+
+    let blueValue =
+      blue(segmentColor) *
+      depthBrightness;
+
+    // Desaturate slightly so the coral feels more like pigment than neon light.
+    const luminance =
+      redValue * 0.299 +
+      greenValue * 0.587 +
+      blueValue * 0.114;
+
+    redValue = lerp(
+      luminance,
+      redValue,
+      0.72
+    );
+
+    greenValue = lerp(
+      luminance,
+      greenValue,
+      0.72
+    );
+
+    blueValue = lerp(
+      luminance,
+      blueValue,
+      0.72
+    );
+
+    const visibleAlpha =
+      visibility *
+      depthAlpha;
+
+    // Broad, faint wash for the watercolor bleed texture.
+    coralGlowMaskLayer.stroke(
+      redValue,
+      greenValue,
+      blueValue,
+      22 * visibleAlpha
+    );
+
+    coralGlowMaskLayer.strokeWeight(
+      segment.width * 5.2
+    );
+
+    coralGlowMaskLayer.line(
+      segment.start.x,
+      segment.start.y,
+      segment.end.x,
+      segment.end.y
+    );
+
+    // Soft outer pigment body.
+    coralLineLayer.stroke(
+      redValue,
+      greenValue,
+      blueValue,
+      24 * visibleAlpha
+    );
+
+    coralLineLayer.strokeWeight(
+      segment.width * 2.6
+    );
+
+    coralLineLayer.line(
+      segment.start.x,
+      segment.start.y,
+      segment.end.x,
+      segment.end.y
+    );
+
+    // Main visible branch stroke.
+    coralLineLayer.stroke(
+      redValue,
+      greenValue,
+      blueValue,
+      68 * visibleAlpha
+    );
+
+    coralLineLayer.strokeWeight(
+      segment.width * 1.35
+    );
+
+    coralLineLayer.line(
+      segment.start.x,
+      segment.start.y,
+      segment.end.x,
+      segment.end.y
+    );
+
+    // Very subtle inner definition.
+    coralLineLayer.stroke(
+      redValue,
+      greenValue,
+      blueValue,
+      0.5 * visibleAlpha
+    );
+
+    coralLineLayer.strokeWeight(
+      max(
+        0.45,
+        segment.width * 0.52
+      )
+    );
+
+    coralLineLayer.line(
+      segment.start.x,
+      segment.start.y,
+      segment.end.x,
+      segment.end.y
+    );
+  }
+}
+
+/**
  * Applies the coral glow shader to the current glow mask.
  */
-function drawCoralGlow() {
+function drawCoralGlow_() {
   coralGlowLayer.clear();
 
   coralGlowLayer.shader(
@@ -514,6 +700,66 @@ function drawCoralGlow() {
   coralGlowLayer.resetShader();
 }
 
+/**
+ * Applies a subtle watercolor bleed effect to the coral pigment mask.
+ */
+function drawCoralGlow() {
+  coralGlowLayer.clear();
+
+  coralGlowLayer.shader(
+    coralGlowShader
+  );
+
+  coralGlowShader.setUniform(
+    "u_texture",
+    coralGlowMaskLayer
+  );
+
+  coralGlowShader.setUniform(
+    "u_resolution",
+    [width, height]
+  );
+
+  coralGlowShader.setUniform(
+    "u_time",
+    millis() * 0.001
+  );
+
+  // Smaller spread to reduce the glowing halo.
+  coralGlowShader.setUniform(
+    "u_radius",
+    2.2
+  );
+
+  // Lower overall intensity.
+  coralGlowShader.setUniform(
+    "u_strength",
+    0.45
+  );
+
+  // Very subtle grain.
+  coralGlowShader.setUniform(
+    "u_grainStrength",
+    0.012
+  );
+
+  // Mild edge irregularity.
+  coralGlowShader.setUniform(
+    "u_edgeVariation",
+    0.9
+  );
+
+  coralGlowLayer.noStroke();
+
+  coralGlowLayer.rect(
+    -width / 2,
+    -height / 2,
+    width,
+    height
+  );
+
+  coralGlowLayer.resetShader();
+}
 
 // -----------------------------------------------------------------------------
 // TEMPERATURE AND POLLUTION
@@ -528,6 +774,24 @@ function initializeEnvironmentSystems() {
   pollutionField =new PollutionField();
 
   pollutionParticles =new PollutionParticleField();
+
+  sceneLayer = createGraphics(
+    width,
+    height
+  );
+
+  pollutionCompositeLayer =
+    createGraphics(
+      width,
+      height,
+      WEBGL
+    );
+
+  pollutionPostProcessShader =
+    pollutionCompositeLayer.createShader(
+      pollutionPostVert,
+      pollutionPostFrag
+    );
 }
 
 /**
@@ -550,11 +814,76 @@ function drawBackgroundLayers() {
  * system remains active.
  */
 function drawPollutionSystem() {
-  // pollutionField.draw();
+  pollutionField.draw();
 
-  pollutionParticles.draw();
+  // pollutionParticles.draw();
 }
 
+/*
+* Applies a post-processing shader to the current canvas content that
+* desaturates the scene based on the pollution mask.
+*/
+function applyPollutionPostProcess() {
+  if (
+    !pollutionPostProcessShader ||
+    !pollutionCompositeLayer ||
+    !sceneLayer ||
+    !pollutionField
+  ) {
+    return;
+  }
+
+  // Capture the complete scene that is currently visible on the main canvas.
+  sceneLayer.clear();
+
+  sceneLayer.image(
+    get(),
+    0,
+    0,
+    width,
+    height
+  );
+
+  pollutionCompositeLayer.clear();
+
+  pollutionCompositeLayer.shader(
+    pollutionPostProcessShader
+  );
+
+  pollutionPostProcessShader.setUniform(
+    "u_scene",
+    sceneLayer
+  );
+
+  pollutionPostProcessShader.setUniform(
+    "u_pollutionMask",
+    pollutionField.getMaskLayer()
+  );
+
+  pollutionPostProcessShader.setUniform(
+    "u_strength",
+    CONFIG.pollution.postProcess
+      .desaturationStrength
+  );
+
+  pollutionCompositeLayer.noStroke();
+
+  pollutionCompositeLayer.rect(
+    -width / 2,
+    -height / 2,
+    width,
+    height
+  );
+
+  // Replace the visible canvas with the processed scene.
+  image(
+    pollutionCompositeLayer,
+    0,
+    0,
+    width,
+    height
+  );
+}
 
 // -----------------------------------------------------------------------------
 // AQUARIUM

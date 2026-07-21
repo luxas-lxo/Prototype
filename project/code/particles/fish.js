@@ -69,26 +69,29 @@ class FishSwarm3 {
     // Collect all valid biomass values to determine the normalization range.
     this.values = [];
 
-    for (
-      let year = CONFIG.fish.data.startYear;
-      year <= CONFIG.fish.data.endYear;
-      year++
-    ) {
-      const value = Number(record[year]);
+    this.values = this.interpolateYearlyValues(
+      record,
+      CONFIG.fish.data.startYear,
+      CONFIG.fish.data.endYear
+    );
 
-      if (!isNaN(value) && value > 0) {
-        this.values.push(value);
-      }
-    }
+    // Determine normalization maximum.
+    const validValues = this.values.filter(
+      value => Number.isFinite(value) && value > 0
+    );
 
-    // Use the highest biomass value as the reference for normalization.
     this.maxBiomass =
-      this.values.length > 0
-        ? max(this.values)
+      validValues.length > 0
+        ? max(validValues)
         : 1;
-
+    
+    // Initialize with the first available value.
     this.currentBiomass =
-      this.maxBiomass;
+      this.values.find(
+        value => Number.isFinite(value) && value > 0
+      ) ?? this.maxBiomass;
+
+    this.setFromBiomass(this.currentBiomass);
 
     // Initialize dynamic swarm properties.
     this.rad =
@@ -198,13 +201,12 @@ class FishSwarm3 {
    * @param {number} year Dataset year to apply.
    */
   setYear(year) {
-    const value =
-      Number(this.data[year]);
+    const index =
+      year - CONFIG.fish.data.startYear;
 
-    if (
-      !isNaN(value) &&
-      value > 0
-    ) {
+    const value = this.values[index];
+
+    if (Number.isFinite(value) && value > 0) {
       this.currentBiomass = value;
       this.setFromBiomass(value);
     }
@@ -464,6 +466,13 @@ class FishSwarm3 {
           .stageSpeedIncrease
       );
 
+      // Apply temporary three-dimensional fishing-current forces.
+      velocity.add(
+        this.getFishingPressureForce(
+          position
+        )
+      );
+
       position.add(velocity);
 
       this.drawTrail(
@@ -522,7 +531,7 @@ class FishSwarm3 {
       const fishColor =
         this.colors[index];
 
-      const trailVisibility =
+            const trailVisibility =
         this.life[index];
 
       const trailRed =
@@ -778,6 +787,86 @@ class FishSwarm3 {
   }
 
   /**
+   * parses a raw input value and returns a valid number if possible.
+   * @param {*} rawValue Raw input value to be validated and parsed.
+   * @returns {number|null} Parsed number if valid, otherwise null.
+   */
+  parseValidValue(rawValue) {
+    if (
+      rawValue === undefined ||
+      rawValue === null ||
+      String(rawValue).trim() === ""
+    ) {
+      return null;
+    }
+
+    const value = Number(rawValue);
+
+    return Number.isFinite(value) && value > 0
+      ? value
+      : null;
+  }
+
+  /**
+   * Interpolates missing biomass values in a dataset between two years.
+   * @param {Object} record Data record containing yearly biomass values.
+   * @param {number} startYear First year of the interpolation range.
+   * @param {number} endYear Last year of the interpolation range.
+   * @returns {Array<number|null>} Array of interpolated biomass values.
+   */
+  interpolateYearlyValues(record, startYear, endYear) {
+    const values = [];
+
+    for (let year = startYear; year <= endYear; year++) {
+      const exactValue = this.parseValidValue(record[year]);
+
+      if (exactValue !== null) {
+        values.push(exactValue);
+        continue;
+      }
+
+      let previousYear = null;
+      let previousValue = null;
+
+      for (let y = year - 1; y >= startYear; y--) {
+        const candidate = this.parseValidValue(record[y]);
+
+        if (candidate !== null) {
+          previousYear = y;
+          previousValue = candidate;
+          break;
+        }
+      }
+
+      let nextYear = null;
+      let nextValue = null;
+      for (let y = year + 1; y <= endYear; y++) {
+        const candidate = this.parseValidValue(record[y]);
+        if (candidate !== null) {
+          nextYear = y;
+          nextValue = candidate;
+          break;
+        }
+      }
+      if (previousValue !== null && nextValue !== null) {
+        const progress =
+          (year - previousYear) /
+          (nextYear - previousYear);
+        const interpolatedValue =
+          previousValue +
+          (nextValue - previousValue) * progress;
+        values.push(interpolatedValue);
+      } else if (nextValue !== null) {
+        values.push(nextValue);
+      } else {
+        values.push(null);
+      }
+    }
+
+    return values;
+  }
+
+  /**
    * Calculates the combined repulsion force produced by all active clicks.
    *
    * Fish positions are projected into screen space before calculating their
@@ -849,6 +938,32 @@ class FishSwarm3 {
     }
 
     return totalForce;
+  }
+
+  /**
+   * Returns the fishing-pressure force acting on one fish.
+   *
+   * The fishing field operates directly in three-dimensional world space.
+   * A zero vector is returned when the field has not been initialized.
+   *
+   * @param {p5.Vector} position Current world-space fish position.
+   * @returns {p5.Vector} Scaled three-dimensional fishing-current force.
+   */
+  getFishingPressureForce(position) {
+    if (!fishingPressureField) {
+      return createVector(
+        0,
+        0,
+        0
+      );
+    }
+
+    return fishingPressureField
+      .getForceAtPosition(position)
+      .mult(
+        CONFIG.fish.interaction
+          .fishing.forceMultiplier
+      );
   }
 
   /**

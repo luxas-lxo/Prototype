@@ -11,6 +11,7 @@ function setup() {
   initializePlanktonSystem();
   initializeCoralSystem();
   initializeEnvironmentSystems();
+  fishingPressureField = new FishingPressureField();
 }
 
 
@@ -22,16 +23,22 @@ function draw() {
   drawBackgroundLayers();
 
   drawAquariumSystem();
+  // drawCoralSystem();
 
   drawFishTrails();
-  drawPlanktonSystem();
-  
   drawFishSystem();
+  drawPlanktonSystem();
+
+  // pollutionField.update();
+  // pollutionField.renderMask();
+  // applyPollutionPostProcess();
 
   updateClickEffects();
+  fishingPressureField.update();
+  fishingPressureField.drawDebug();
 
-  // drawCoralSystem();
-  // drawPollutionSystem();
+  //drawPollutionSystem();
+
 }
 
 /**

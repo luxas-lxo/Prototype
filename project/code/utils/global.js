@@ -88,6 +88,21 @@ let pollutionField;
 // Shader-rendered pollution fragment particles.
 let pollutionParticles;
 
+// Full-screen shader used to apply pollution-based desaturation.
+let pollutionPostProcessShader;
+
+// WEBGL layer used to render the post-processed scene.
+let pollutionCompositeLayer;
+
+// Scene layer containing the complete normally rendered image.
+let sceneLayer;
+
+// -----------------------------------------------------------------------------
+// FISHING
+// -----------------------------------------------------------------------------
+
+// Fishing-pressure current field affecting fish movement.
+let fishingPressureField;
 
 // -----------------------------------------------------------------------------
 // CLICK INTERACTION
@@ -116,14 +131,6 @@ let aquarium;
 
 // HTML element used to display the current frame rate.
 let frameRateP;
-
-
-// -----------------------------------------------------------------------------
-// SHARED VALUES
-// -----------------------------------------------------------------------------
-
-// Shared random or variation factor used by legacy visual systems.
-// const rand = 0.15;
 
 
 // -----------------------------------------------------------------------------
