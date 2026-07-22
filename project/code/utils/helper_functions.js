@@ -53,8 +53,7 @@ function initializeFishSystem() {
   trailLayer =
     createRenderLayer(false);
 
-  aquarium =
-    new Statue();
+  // aquarium = new Statue();
 
   createCodSwarms();
 }
@@ -1559,7 +1558,7 @@ fishingPressureField =
  */
 function drawAquariumSystem() {
   drawGlowBackground();
-  aquarium.draw();
+  // aquarium.draw();
 }
 
 
@@ -2228,4 +2227,48 @@ function finishFrameExport() {
   );
 
   noLoop();
+}
+
+/**
+ * Returns a smooth interpolation value between two boundaries.
+ *
+ * @param {number} edge0 Lower boundary.
+ * @param {number} edge1 Upper boundary.
+ * @param {number} value Input value.
+ * @returns {number} Smoothed value between 0 and 1.
+ */
+function smoothStep(
+  edge0,
+  edge1,
+  value
+) {
+  if (edge0 === edge1) {
+    return value < edge0
+      ? 0
+      : 1;
+  }
+
+  const normalizedValue =
+    constrain(
+      (
+        value -
+        edge0
+      ) /
+      (
+        edge1 -
+        edge0
+      ),
+      0,
+      1
+    );
+
+  return (
+    normalizedValue *
+    normalizedValue *
+    (
+      3 -
+      2 *
+      normalizedValue
+    )
+  );
 }

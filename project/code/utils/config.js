@@ -9,7 +9,7 @@ const CONFIG = {
     // Controls fish rendering and shader-related limits
     rendering: {
       // Maximum number of fish that can be passed to the shader
-      maxShaderParticles: 80,
+      maxShaderParticles: 40,
 
       // Available base colors assigned randomly to individual fish
       colors: [
@@ -606,6 +606,29 @@ const CONFIG = {
           }
         },
 
+        maskFalloff: {
+          // Number of nested polygon layers used to create a soft edge
+          layerCount: 12,
+
+          // Minimum scale of the innermost polygon
+          innerScale: 0.18,
+
+          // Controls how quickly intensity decreases toward the outer edge
+          exponent: 1.8
+        },
+
+        spawnExclusion: {
+          // Prevent new patches from spawning near the canvas center
+          enabled: true,
+
+          // Exclusion-zone size relative to the canvas dimensions
+          widthMultiplier: 0.35,
+          heightMultiplier: 0.3,
+
+          // Prevent endless retries if the valid spawn area becomes too small
+          maxAttempts: 30
+        },
+
         growth: {
           // Initial scale assigned to newly created patches
           initialScale: 0.02,
@@ -959,8 +982,8 @@ const CONFIG = {
       },
 
       opacity: {
-        min: 20,
-        max: 85
+        min: 10,
+        max: 20
       },
 
       colors: [

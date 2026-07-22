@@ -640,7 +640,7 @@ void main() {
     );
 
   float finalPollutionAmount =
-    pollutionAmount * 0.45;
+    pollutionAmount * 0.85;
 
   // First remove the original chroma.
   vec3 desaturatedScene =

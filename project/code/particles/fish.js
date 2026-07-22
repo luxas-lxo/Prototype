@@ -645,51 +645,58 @@ class FishSwarm3 {
       const fishColor =
         this.colors[index];
 
-      const trailVisibility =
-        this.life[index];
 
-      const trailRed =
-        red(fishColor) *
-        depthBrightness *
-        trailVisibility;
+      // IMPORTANT
+      const shouldUpdateTrail = (frameCount + index) % 2 === 0;
+      if (shouldUpdateTrail) {
 
-      const trailGreen =
-        green(fishColor) *
-        depthBrightness *
-        trailVisibility;
+        const trailVisibility =
+          this.life[index];
 
-      const trailBlue =
-        blue(fishColor) *
-        depthBrightness *
-        trailVisibility;
+        const trailRed =
+          red(fishColor) *
+          depthBrightness *
+          trailVisibility;
 
-      const trailAlpha =
-        CONFIG.fish.trail.alpha *
-        lerp(
-          CONFIG.fish.trail.swarmBrightness.min,
-          CONFIG.fish.trail.swarmBrightness.max,
-          this.brightness
-        ) *
-        depthAlpha *
-        trailVisibility;
+        const trailGreen =
+          green(fishColor) *
+          depthBrightness *
+          trailVisibility;
 
-      trailLayer.stroke(
-        trailRed,
-        trailGreen,
-        trailBlue,
-        trailAlpha
-      );
+        const trailBlue =
+          blue(fishColor) *
+          depthBrightness *
+          trailVisibility;
 
-      trailLayer.strokeWeight(
-        CONFIG.fish.trail.strokeWeight
-      );
+        const trailAlpha =
+          CONFIG.fish.trail.alpha *
+          lerp(
+            CONFIG.fish.trail.swarmBrightness.min,
+            CONFIG.fish.trail.swarmBrightness.max,
+            this.brightness
+          ) *
+          depthAlpha *
+          trailVisibility;
 
-      trailLayer.line(
-        previousPosition.x,
-        previousPosition.y,
-        projectedPosition.x,
-        projectedPosition.y
-      );
+        trailLayer.stroke(
+          trailRed,
+          trailGreen,
+          trailBlue,
+          trailAlpha
+        );
+
+        trailLayer.strokeWeight(
+          CONFIG.fish.trail.strokeWeight
+        );
+      }
+
+        trailLayer.line(
+          previousPosition.x,
+          previousPosition.y,
+          projectedPosition.x,
+          projectedPosition.y
+        );
+      
     }
 
     // Store the current projected position for the next trail segment.

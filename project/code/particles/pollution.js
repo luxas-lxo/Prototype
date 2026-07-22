@@ -118,7 +118,23 @@ class PollutionField {
 	 * @param {number} y Initial vertical canvas position.
 	 * @returns {Object} Newly created pollution patch.
 	 */
-	createPatch(x = random(width), y = random(height)) {
+	createPatch(
+		x = null,
+		y = null
+		) {
+		if (
+			!Number.isFinite(x) ||
+			!Number.isFinite(y)
+		) {
+			const spawnPosition =
+			this.createPatchSpawnPosition();
+
+			x =
+			spawnPosition.x;
+
+			y =
+			spawnPosition.y;
+		}
 		const radius = random(this.minPatchRadius, this.maxPatchRadius);
 
 		const patchConfig = CONFIG.pollution.field.patchShape;
@@ -605,14 +621,13 @@ class PollutionField {
 		layer.rotate(patch.rotation);
 
 		if (isMask) {
-			const maskValue =
-				CONFIG.pollution.field
-					.rendering.colorChannelMax *
-				patch.intensity *
-				this.pollution *
-				patch.scale;
+			this.drawPatchMask(
+				layer,
+				patch
+			);
 
-			layer.fill(maskValue);
+			layer.pop();
+			return;
 		} else {
 			const patchAlpha =
 				CONFIG.pollution.field.rendering.colorChannelMax *
@@ -644,6 +659,175 @@ class PollutionField {
 
 		layer.endShape(CLOSE);
 		layer.pop();
+	}
+
+	/**
+	 * Draws a layered grayscale mask with weaker pollution near the patch edge.
+	 *
+	 * @param {p5.Graphics} layer Target mask layer.
+	 * @param {Object} patch Pollution patch data.
+	 */
+	drawPatchMask(
+	layer,
+	patch
+	) {
+	const config =
+		CONFIG.pollution.field;
+
+	const falloffConfig =
+		config.maskFalloff;
+
+	const layerCount =
+		max(
+		1,
+		floor(
+			falloffConfig.layerCount
+		)
+		);
+
+	layer.noStroke();
+
+	for (
+		let layerIndex =
+		layerCount - 1;
+		layerIndex >= 0;
+		layerIndex--
+	) {
+		const progress =
+		layerCount <= 1
+			? 1
+			: layerIndex /
+			(
+				layerCount - 1
+			);
+
+		const polygonScale =
+		lerp(
+			falloffConfig.innerScale,
+			2,
+			progress
+		) *
+		patch.scale;
+
+		// Outer layers receive less intensity.
+		const centerStrength =
+		pow(
+			1 - progress,
+			falloffConfig.exponent
+		);
+
+		const maskValue =
+		config.rendering
+			.colorChannelMax *
+		patch.intensity *
+		this.pollution *
+		smoothStep(
+			0,
+			1,
+			patch.scale
+		) *
+		centerStrength;
+
+		layer.fill(
+		maskValue
+		);
+
+		layer.beginShape();
+
+		for (
+		const vertex of patch.vertices
+		) {
+		layer.vertex(
+			vertex.x *
+			polygonScale,
+			vertex.y *
+			polygonScale
+		);
+		}
+
+		layer.endShape(CLOSE);
+	}
+	}
+
+	/**
+	 * Returns a random patch position outside the configured center exclusion zone.
+	 *
+	 * @returns {p5.Vector} Valid screen-space spawn position.
+	 */
+	createPatchSpawnPosition() {
+		const config =
+			CONFIG.pollution.field
+			.spawnExclusion;
+
+		if (!config.enabled) {
+			return createVector(
+			random(width),
+			random(height)
+			);
+		}
+
+		const exclusionHalfWidth =
+			width *
+			config.widthMultiplier *
+			0.5;
+
+		const exclusionHalfHeight =
+			height *
+			config.heightMultiplier *
+			0.5;
+
+		const centerX =
+			width * 0.5;
+
+		const centerY =
+			height * 0.5;
+
+		for (
+			let attempt = 0;
+			attempt < config.maxAttempts;
+			attempt++
+		) {
+			const x =
+			random(width);
+
+			const y =
+			random(height);
+
+			const isInsideCenterZone =
+			abs(
+				x -
+				centerX
+			) <
+				exclusionHalfWidth &&
+			abs(
+				y -
+				centerY
+			) <
+				exclusionHalfHeight;
+
+			if (!isInsideCenterZone) {
+			return createVector(
+				x,
+				y
+			);
+			}
+		}
+
+	// Fallback to a position near one of the canvas edges.
+	return createVector(
+			random() < 0.5
+			? random(
+				0,
+				centerX -
+					exclusionHalfWidth
+				)
+			: random(
+				centerX +
+					exclusionHalfWidth,
+				width
+				),
+			random(height)
+		);
 	}
 
 	/**
