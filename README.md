@@ -6,8 +6,6 @@ It is not intended as a realistic simulation, but as a symbolic visual system in
 
 Viewers can intervene through touch, but their influence remains small compared to larger forces such as pollution, rising temperature, and fishing pressure. The central idea is that life creates its own artwork, while the environment around it is gradually transformed by human and natural influences.
 
-[Project Video](link_to_your_video.mp4)
-
 [GitHub Repository](https://github.com/luxas-lxo/Prototype.git)
 
 ## Ideation and Related Works
@@ -96,7 +94,7 @@ The project is based on several real environmental datasets:
 - [**Continuous Plankton Recorder, provided through BCO-DMO**](https://www.bco-dmo.org/dataset/765141) – Annual zooplankton abundance.
 - [**NOAA ERSSTv6**](https://psl.noaa.gov/data/gridded/data.noaa.ersst.v6.html) – Annual mean sea-surface temperature in the North Atlantic.
 - [**OECD Plastic Leakage**](https://data-explorer.oecd.org) – Estimates of accumulated plastic pollution in the ocean.
-- [**ICES Historical Nominal Catches and Official Nominal Catches**](https://www.ices.dk/data/dataset-collections/Pages/Fish-catch-and-stock-assessment.aspx) – Total fishing activity and Atlantic cod catch volumes.
+- [**ICES Historical Nominal Catches and Official Nominal Catches**](https://data-explorer.oecd.org/vis?fs[0]=Topic,1%7CEnvironment%20and%20climate%20change%23ENV%23%7CPlastics%23ENV_PLS%23&pg=0&fc=Topic&bp=true&snb=11&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PL%40DF_PL&df[ag]=OECD.ENV.EEI&df[vs]=1.0&dq=.PL_MLW..A.&pd=1990,&to[TIME_PERIOD]=false) – Total fishing activity and Atlantic cod catch volumes.
 
 ### Data Preprocessing
 

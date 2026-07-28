@@ -72,9 +72,75 @@ function mousePressed() {
 }
 
 /**
+ * Starts a continuous click-glow stroke.
+ */
+function touchStarted() {
+  isDrawingClickGlow = true;
+
+  lastClickGlowPoint =
+    createVector(
+      mouseX,
+      mouseY
+    );
+
+  createClickEffect(
+    mouseX,
+    mouseY
+  );
+}
+
+/**
  * Adds glow points while the pointer is dragged.
  */
 function mouseDragged() {
+  if (
+    !isDrawingClickGlow ||
+    !lastClickGlowPoint
+  ) {
+    return;
+  }
+
+  if (
+    mouseX < 0 ||
+    mouseX > width ||
+    mouseY < 0 ||
+    mouseY > height
+  ) {
+    return;
+  }
+
+  const currentPoint =
+    createVector(
+      mouseX,
+      mouseY
+    );
+
+  const distanceFromLastPoint =
+    p5.Vector.dist(
+      currentPoint,
+      lastClickGlowPoint
+    );
+
+  if (
+    distanceFromLastPoint <
+    CLICK_GLOW_POINT_DISTANCE
+  ) {
+    return;
+  }
+
+  createGlowPointsBetween(
+    lastClickGlowPoint,
+    currentPoint
+  );
+
+  lastClickGlowPoint =
+    currentPoint;
+}
+
+/**
+ * Adds glow points while the pointer is dragged.
+ */
+function touchMoved() {
   if (
     !isDrawingClickGlow ||
     !lastClickGlowPoint
@@ -128,6 +194,14 @@ function mouseReleased() {
 }
 
 /**
+ * Finishes the current click-glow stroke.
+ */
+function touchEnded() {
+  isDrawingClickGlow = false;
+  lastClickGlowPoint = null;
+}
+
+/**
  * Starts frame-sequence rendering when the user presses the E key.
  */
 function keyPressed() {
@@ -135,6 +209,6 @@ function keyPressed() {
     key === "e" ||
     key === "E"
   ) {
-    startFrameExport();
+    // startFrameExport();
   }
 }
