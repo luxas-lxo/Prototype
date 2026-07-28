@@ -2272,3 +2272,207 @@ function smoothStep(
     )
   );
 }
+
+/**
+ * Returns a numeric table value for a given year.
+ *
+ * @param {p5.Table} table Source table.
+ * @param {number} currentYear Requested year.
+ * @param {string} yearColumn Name of the year column.
+ * @param {string} valueColumn Name of the value column.
+ * @returns {number|null} Parsed value or null when no valid value exists.
+ */
+function getTableValueForYear(
+  table,
+  currentYear,
+  yearColumn,
+  valueColumn
+) {
+  if (!table) {
+    return null;
+  }
+
+  const targetYear =
+    floor(currentYear);
+
+  for (
+    let rowIndex = 0;
+    rowIndex < table.getRowCount();
+    rowIndex++
+  ) {
+    const row =
+      table.getRow(rowIndex);
+
+    const rowYear =
+      Number(
+        row.get(yearColumn)
+      );
+
+    if (rowYear !== targetYear) {
+      continue;
+    }
+
+    const value =
+      Number(
+        row.get(valueColumn)
+      );
+
+    return Number.isFinite(value)
+      ? value
+      : null;
+  }
+
+  return null;
+}
+
+/**
+ * Draws the current year and environmental data values.
+ *
+ * @param {number} currentYear Current year of the simulation.
+ */
+function drawCurrentData(
+  currentYear
+) {
+  const temperature =
+    getTableValueForYear(
+      temperatureTable,
+      currentYear,
+      "year",
+      "temperature_c"
+    );
+
+  const pollution =
+    getTableValueForYear(
+      pollutionTable,
+      currentYear,
+      "year",
+      "plastic_stock_million_tonnes"
+    );
+
+  const fishingPressure =
+    getTableValueForYear(
+      fishingPressureTable,
+      currentYear,
+      "year",
+      "cod_catch_tonnes"
+    );
+
+  const lines = [
+    {
+      label: "Atlantic cod",
+      value: ""
+    },
+    {
+      label: "Year",
+      value: String(
+        floor(currentYear)
+      )
+    },
+    {
+      label: "Temperature",
+      value:
+        temperature !== null 
+          ? `${temperature.toFixed(2)} °C`
+          : "No data"
+    },
+    {
+      label: "Pollution",
+      value:
+        pollution !== null && pollution !== 0
+          ? `${(pollution).toFixed(3)} Mt`
+          : "No data"
+    },
+    {
+      label: "Fishing pressure",
+      value:
+        fishingPressure !== null
+          ? `${(fishingPressure / 1000000).toFixed(3)} Mt`
+          : "No data"
+    }
+  ];
+
+  push();
+  resetMatrix();
+
+  textSize(15);
+  textStyle(NORMAL);
+  textAlign(LEFT, TOP);
+
+  const padding = 14;
+  const lineHeight = 23;
+  const x = 30;
+
+  let maximumLineWidth = 0;
+
+  for (const line of lines) {
+    maximumLineWidth =
+      max(
+        maximumLineWidth,
+        textWidth(
+          `${line.label}:     ${line.value}`
+        )
+      );
+  }
+
+  const boxWidth =
+    maximumLineWidth +
+    padding * 2;
+
+  const boxHeight =
+    lines.length *
+      lineHeight +
+    padding * 2;
+
+  const y =
+    height -
+    boxHeight -
+    30;
+
+  noStroke();
+  fill(0, 40);
+
+  rect(
+    x,
+    y,
+    boxWidth,
+    boxHeight,
+    5
+  );
+
+  for (
+    let index = 0;
+    index < lines.length;
+    index++
+  ) {
+    const line =
+      lines[index];
+
+    const lineY =
+      y +
+      padding +
+      index *
+        lineHeight;
+
+    fill(255, 70);
+    textAlign(LEFT, TOP);
+
+    text(
+      `${line.label}${line.value ? ':' : ''}`,
+      x + padding,
+      lineY
+    );
+
+    fill(255, 180);
+    textAlign(RIGHT, TOP);
+
+    text(
+      line.value,
+      x +
+        boxWidth -
+        padding,
+      lineY
+    );
+  }
+
+  pop();
+}

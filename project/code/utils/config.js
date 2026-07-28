@@ -9,7 +9,7 @@ const CONFIG = {
     // Controls fish rendering and shader-related limits
     rendering: {
       // Maximum number of fish that can be passed to the shader
-      maxShaderParticles: 40,
+      maxShaderParticles: 60,
 
       // Available base colors assigned randomly to individual fish
       colors: [
@@ -515,7 +515,7 @@ const CONFIG = {
       temperature: 0.5,
 
       // Overall opacity of the temperature layer
-      opacity: 0.3,
+      opacity: 0.4,
 
       // Animation speed multiplier
       speed: 0.5

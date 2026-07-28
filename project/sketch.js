@@ -44,6 +44,7 @@ function draw() {
   //drawPollutionSystem();
 
   exportCurrentFrame();
+  drawCurrentData(currentYear);
 }
 
 /**
