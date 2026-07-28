@@ -2476,3 +2476,48 @@ function drawCurrentData(
 
   pop();
 }
+
+/**
+ * Creates the fullscreen start overlay.
+ */
+function createStartScreen() {
+  startScreen = createDiv();
+  startScreen.id("start-screen");
+
+  const title = createElement(
+    "h1",
+    "Ocean Art"
+  );
+
+  title.parent(startScreen);
+
+  const description = createP(
+    "A data-driven ocean ecosystem from 1970 to 2020."
+  );
+
+  description.parent(startScreen);
+
+  startButton = createButton(
+    "Start"
+  );
+
+  startButton.parent(startScreen);
+
+  startButton.mousePressed(
+    startProject
+  );
+}
+
+/**
+ * Starts the artwork and removes the start overlay.
+ */
+function startProject() {
+  projectStarted = true;
+
+  startScreen.remove();
+
+  // Restart the timeline from its first year.
+  currentYear = 1970;
+
+  loop();
+}

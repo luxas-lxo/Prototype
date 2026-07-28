@@ -4,7 +4,7 @@
  */
 function setup() {
   initializeCanvas();
-  initializeInterface();
+  //initializeInterface();
   initializeWorld();
   initializeClickGlowSystem();
 
@@ -14,6 +14,9 @@ function setup() {
   initializeTemperatureSystem();
   initializeEnvironmentSystems();
   initializeFishingPressureSystem();
+
+  createStartScreen();
+  noLoop();
 }
 
 
@@ -21,8 +24,11 @@ function setup() {
  * Updates and renders one complete animation frame.
  */
 function draw() {
+  if (!projectStarted) {
+    return;
+  }
   updateDatasetYear();
-  updateFrameRateDisplay(datasetYear);
+  // updateFrameRateDisplay(datasetYear);
   drawBackgroundLayers();
 
   drawAquariumSystem();
